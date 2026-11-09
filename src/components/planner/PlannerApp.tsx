@@ -7,7 +7,6 @@ import {
   Sparkles, 
   Palette, 
   Lock, 
-  ArrowLeft, 
   ShieldCheck,
   User,
   Download,
@@ -29,11 +28,7 @@ import AuthModal from './AuthModal';
 import ExportModal from './ExportModal';
 import { plannerService, AuthUser } from '../../services/plannerService';
 
-interface PlannerAppProps {
-  onBackToWebsite: () => void;
-}
-
-export default function PlannerApp({ onBackToWebsite }: PlannerAppProps) {
+export default function PlannerApp() {
   // Navigation tabs
   const [activeTab, setActiveTab] = useState<'today' | 'diary' | 'tasks' | 'calendar'>('today');
 
@@ -156,16 +151,6 @@ export default function PlannerApp({ onBackToWebsite }: PlannerAppProps) {
         {/* Top Bar / Client Reassurance & Mockup Switcher Header */}
         <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-md border-b border-white/10 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <button
-              onClick={onBackToWebsite}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Public Website</span>
-            </button>
-
-            <div className="h-4 w-px bg-white/20 hidden sm:block" />
-
             <div className="flex items-center gap-2">
               <span className="font-heading font-bold text-sm tracking-wide text-white">
                 Luke Smith
