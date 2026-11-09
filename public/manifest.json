@@ -1,0 +1,17 @@
+{
+  "short_name": "Luke Planner",
+  "name": "Luke Smith — Private Diary & Work Planner",
+  "description": "Private, personalized personal diary, task manager, and AI work planner.",
+  "start_url": "/#planner",
+  "display": "standalone",
+  "theme_color": "#1a1f36",
+  "background_color": "#0c101c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any 192x192 512x512"
+    }
+  ]
+}
