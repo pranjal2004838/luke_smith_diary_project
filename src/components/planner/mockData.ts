@@ -1,3 +1,5 @@
+export type MindsetType = 'Calm' | 'Focused' | 'Energized' | 'Reflective' | 'Stretched';
+
 export interface Task {
   id: string;
   title: string;
@@ -29,11 +31,20 @@ export interface DiaryEntry {
   title: string;
   content: string;
   type: 'note' | 'voice' | 'idea';
+  mindset?: MindsetType;
   tags: string[];
   audioUrl?: string;
   audioDuration?: string;
   transcript?: string;
   attachments?: { type: 'image' | 'link'; url: string; label: string }[];
+}
+
+export interface MindsetCheckIn {
+  id: string;
+  date: string;
+  time: string;
+  mindset: MindsetType;
+  note?: string;
 }
 
 export interface Project {
@@ -47,142 +58,153 @@ export interface Project {
   deadline: string;
 }
 
+const getLocalDateStr = (offsetDays = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const TODAY_STR = getLocalDateStr(0);
+export const YESTERDAY_STR = getLocalDateStr(-1);
+export const TOMORROW_STR = getLocalDateStr(1);
+export const FRIDAY_STR = getLocalDateStr(3);
+
 export const initialProjects: Project[] = [
   {
     id: 'proj-1',
     name: 'Book 13: "The Courage to Ask"',
-    color: '#f0a500', // Gold
+    color: '#38bdf8',
     progress: 72,
     totalTasks: 18,
     completedTasks: 13,
     currentMilestone: 'Final galleys revision with Penguin UK',
-    deadline: '2026-11-28',
+    deadline: getLocalDateStr(10),
   },
   {
     id: 'proj-2',
-    name: 'TEDx & Keynote Spring Tour',
-    color: '#3b82f6', // Blue
+    name: 'Film & Media Production',
+    color: '#34d399',
     progress: 55,
     totalTasks: 12,
     completedTasks: 7,
-    currentMilestone: 'AV slide sync & contracts signoff',
-    deadline: '2026-12-05',
+    currentMilestone: 'Send film notes & studio schedule',
+    deadline: getLocalDateStr(14),
   },
   {
     id: 'proj-3',
     name: 'Real Direction Academy',
-    color: '#10b981', // Emerald
+    color: '#c084fc',
     progress: 40,
     totalTasks: 10,
     completedTasks: 4,
     currentMilestone: 'Mentorship cohort curriculum launch',
-    deadline: '2026-12-15',
+    deadline: getLocalDateStr(20),
   },
   {
     id: 'proj-4',
-    name: 'Personal & Health',
-    color: '#8b5cf6', // Purple
+    name: 'Personal & Mindset',
+    color: '#fbbf24',
     progress: 80,
     totalTasks: 5,
     completedTasks: 4,
-    currentMilestone: 'Quarterly retreat booking',
-    deadline: '2026-11-30',
+    currentMilestone: 'Daily mindfulness & reflection streak',
+    deadline: getLocalDateStr(7),
   },
 ];
 
 export const initialTasks: Task[] = [
   {
     id: 't-1',
-    title: 'Review Chapter 4 galleys and margin queries from editor',
-    project: 'Book 13: "The Courage to Ask"',
-    priority: 'urgent',
-    dueDate: '2026-11-06',
+    title: 'Review the project plan',
+    project: 'Real Direction Academy',
+    priority: 'high',
+    dueDate: TODAY_STR,
+    dueTime: '11:00 am',
     completed: false,
-    isOverdue: true,
-    isCarriedForward: true,
-    notes: 'Carried forward from yesterday. Penguin UK expects returned PDF by 5 PM.',
-    milestone: 'Final galleys revision with Penguin UK',
+    notes: 'Confirm next milestone dates and key deliverables.',
+    milestone: 'Mentorship cohort curriculum launch',
   },
   {
     id: 't-2',
-    title: 'Finalize stage AV deck for Leadership Summit Keynote',
-    project: 'TEDx & Keynote Spring Tour',
+    title: 'Send the film notes',
+    project: 'Film & Media Production',
     priority: 'high',
-    dueDate: '2026-11-07',
-    dueTime: '14:00',
+    dueDate: TODAY_STR,
+    dueTime: '2:00 pm',
     completed: false,
-    notes: 'Check 16:9 widescreen ratio and video embed cues.',
-    milestone: 'AV slide sync & contracts signoff',
+    notes: 'Include lighting cues and intro talking points.',
+    milestone: 'Send film notes & studio schedule',
   },
   {
     id: 't-3',
-    title: 'Review 3 production meeting questions with Marcus',
-    project: 'Real Direction Academy',
-    priority: 'high',
-    dueDate: '2026-11-07',
-    dueTime: '16:30',
+    title: "Check tomorrow's diary",
+    project: 'Personal & Mindset',
+    priority: 'medium',
+    dueDate: TODAY_STR,
+    dueTime: '4:30 pm',
     completed: false,
-    notes: 'Generated from voice capture note.',
+    notes: 'Review priorities and set top 3 goals for tomorrow.',
   },
   {
     id: 't-4',
-    title: 'Sign off on Question-Cards custom gold foil packaging proof',
+    title: 'Review Chapter 4 galleys with editor',
     project: 'Book 13: "The Courage to Ask"',
-    priority: 'medium',
-    dueDate: '2026-11-07',
-    completed: true,
-    notes: 'Approved high-res print proof with printer.',
+    priority: 'urgent',
+    dueDate: YESTERDAY_STR,
+    completed: false,
+    isOverdue: true,
+    isCarriedForward: true,
+    notes: 'Carried forward from yesterday. Penguin UK expects returned PDF.',
+    milestone: 'Final galleys revision with Penguin UK',
   },
   {
     id: 't-5',
-    title: 'Approve newsletter draft: "The Sunday Spark #142"',
-    project: 'Real Direction Academy',
+    title: 'Morning reflection & priority check-in',
+    project: 'Personal & Mindset',
     priority: 'medium',
-    dueDate: '2026-11-07',
+    dueDate: TODAY_STR,
+    dueTime: '8:30 am',
     completed: true,
   },
   {
     id: 't-6',
-    title: 'Confirm travel dates for Birmingham keynote & hotel booking',
-    project: 'TEDx & Keynote Spring Tour',
-    priority: 'low',
-    dueDate: '2026-11-08',
-    completed: false,
-  },
-  {
-    id: 't-7',
-    title: 'Morning 45-min interval run & journal reflection',
-    project: 'Personal & Health',
+    title: 'Sign off on Question-Cards packaging proof',
+    project: 'Book 13: "The Courage to Ask"',
     priority: 'medium',
-    dueDate: '2026-11-07',
+    dueDate: TODAY_STR,
+    dueTime: '9:30 am',
     completed: true,
+    notes: 'Approved high-res print proof with printer.',
   },
 ];
 
 export const initialAppointments: Appointment[] = [
   {
     id: 'app-1',
-    title: 'Briefing Call: Global Banking Leadership Forum',
-    time: '11:00 - 11:45 AM',
-    date: '2026-11-07',
+    title: 'Briefing Call: Global Leadership Forum',
+    time: '11:30 am - 12:15 pm',
+    date: TODAY_STR,
     location: 'Zoom (Virtual)',
     type: 'keynote',
     clientOrHost: 'Sarah Jenkins (Event Director)',
   },
   {
     id: 'app-2',
-    title: 'Production Sync: Real Direction Episode 14',
-    time: '04:00 - 05:00 PM',
-    date: '2026-11-07',
+    title: 'Production Sync: Studio Session',
+    time: '3:00 pm - 4:00 pm',
+    date: TODAY_STR,
     location: 'Studio 3, Soho London',
     type: 'recording',
     clientOrHost: 'Marcus & AV Crew',
   },
   {
     id: 'app-3',
-    title: 'Penguin Books Publishing Strategy Check-in',
-    time: '02:30 - 03:15 PM',
-    date: '2026-11-09',
+    title: 'Penguin Books Editorial Check-in',
+    time: '2:30 pm - 3:15 pm',
+    date: getLocalDateStr(2),
     location: 'Google Meet',
     type: 'meeting',
     clientOrHost: 'Editorial Board',
@@ -192,15 +214,18 @@ export const initialAppointments: Appointment[] = [
 export const initialDiaryEntries: DiaryEntry[] = [
   {
     id: 'd-1',
-    date: '2026-11-07',
-    time: '08:45 AM',
+    date: TODAY_STR,
+    time: '08:45 am',
     title: 'Morning Voice Memo — Production & Editor Sync',
     type: 'voice',
-    content: 'Follow up with the editor on Friday and prepare three questions for the production meeting. Make sure we also address the sound check schedule for the studio session.',
+    mindset: 'Calm',
+    content:
+      'Follow up with the editor on Friday and prepare three questions for the production meeting. Make sure we also address the sound check schedule for the studio session.',
     tags: ['Publishing', 'Studio', 'QuickCapture'],
     audioUrl: 'simulated_audio_waveform.mp3',
     audioDuration: '0:48',
-    transcript: 'Follow up with the editor on Friday and prepare three questions for the production meeting. Make sure we also address the sound check schedule for the studio session.',
+    transcript:
+      'Follow up with the editor on Friday and prepare three questions for the production meeting. Make sure we also address the sound check schedule for the studio session.',
     attachments: [
       {
         type: 'link',
@@ -211,20 +236,32 @@ export const initialDiaryEntries: DiaryEntry[] = [
   },
   {
     id: 'd-2',
-    date: '2026-11-06',
-    time: '10:20 PM',
+    date: YESTERDAY_STR,
+    time: '10:20 pm',
     title: 'Evening Reflection: The Art of Unspoken Questions',
     type: 'note',
-    content: 'In leadership, the most dangerous assumption is believing silence equals agreement. When speaking with executives today, 80% of what blocked their team wasn\'t strategy—it was fear of asking what seemed "obvious". Need to expand this into a chapter prologue for Book 13.',
+    mindset: 'Reflective',
+    content:
+      'In leadership, the most dangerous assumption is believing silence equals agreement. When speaking with executives today, 80% of what blocked their team was fear of asking what seemed obvious. Expand this into Chapter 5.',
     tags: ['Philosophy', 'BookNotes', 'Keynotes'],
   },
   {
     id: 'd-3',
-    date: '2026-11-05',
-    time: '02:15 PM',
-    title: 'Card Deck Concept: "Difficult Conversations for Teams"',
+    date: getLocalDateStr(-2),
+    time: '02:15 pm',
+    title: 'Card Deck Concept: "Difficult Conversations"',
     type: 'idea',
-    content: 'Drafting 10 sample prompt cards for high-stakes executive dialogue. Core theme: Disagreeing without contempt. Card 1: What would you say if you knew you could not be fired for saying it?',
+    mindset: 'Energized',
+    content:
+      'Drafting 10 sample prompt cards for high-stakes executive dialogue. Core theme: Disagreeing without contempt.',
     tags: ['QuestionCards', 'ProductIdea'],
   },
+];
+
+export const initialMindsetHistory: MindsetCheckIn[] = [
+  { id: 'm-1', date: getLocalDateStr(-4), time: '09:00 am', mindset: 'Focused', note: 'Deep writing session' },
+  { id: 'm-2', date: getLocalDateStr(-3), time: '08:30 am', mindset: 'Energized', note: 'Great keynote feedback' },
+  { id: 'm-3', date: getLocalDateStr(-2), time: '02:15 pm', mindset: 'Stretched', note: 'Busy filming schedule' },
+  { id: 'm-4', date: YESTERDAY_STR, time: '10:20 pm', mindset: 'Reflective', note: 'Evening journaling helped unwind' },
+  { id: 'm-5', date: TODAY_STR, time: '08:45 am', mindset: 'Calm', note: 'Clear priorities for today' },
 ];

@@ -1,274 +1,283 @@
-import { 
-  CheckCircle2, 
-  Circle, 
-  Clock, 
-  Calendar as CalendarIcon, 
-  RotateCcw,
-  Sparkles,
-  AlertCircle
+import { useState, useEffect } from 'react';
+import {
+  Check,
+  Clock,
+  Mic,
+  Plus,
+  Camera,
+  Settings,
+  Smile,
+  CheckCircle2
 } from 'lucide-react';
-import { Task, Appointment } from './mockData';
+import { Task, MindsetCheckIn } from './mockData';
+import { TEXT_COLOR_THEMES, TextColorOption } from './DesignCustomizer';
 
 interface TodayDashboardProps {
   tasks: Task[];
-  appointments: Appointment[];
-  onToggleTask: (id: string) => void;
-  onOpenQuickCapture: () => void;
-  onOpenAiExtractor: () => void;
+  mindsetHistory: MindsetCheckIn[];
+  textColor: TextColorOption;
   isGlassTheme?: boolean;
+  onToggleTask: (id: string) => void;
+  onOpenAddTask: () => void;
+  onOpenRecordThought: () => void;
+  onOpenViewCharts: () => void;
+  onOpenUpdatePhoto: () => void;
+  onOpenSettings: () => void;
+  onOpenProjects: () => void;
 }
 
 export default function TodayDashboard({
   tasks,
-  appointments,
+  mindsetHistory,
+  textColor,
+  isGlassTheme = true,
   onToggleTask,
-  onOpenQuickCapture,
-  onOpenAiExtractor,
-  isGlassTheme = false,
+  onOpenAddTask,
+  onOpenRecordThought,
+  onOpenViewCharts,
+  onOpenUpdatePhoto,
+  onOpenSettings,
+  onOpenProjects,
 }: TodayDashboardProps) {
-  const completedTasks = tasks.filter(t => t.completed);
-  const openTasks = tasks.filter(t => !t.completed && !t.isOverdue);
-  const overdueTasks = tasks.filter(t => !t.completed && t.isOverdue);
-  const carriedForwardTasks = tasks.filter(t => t.isCarriedForward);
+  const [now, setNow] = useState(new Date());
 
-  const totalTasks = tasks.length;
-  const progressPercent = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Clean, high-contrast, calm card backgrounds
-  const cardBg = isGlassTheme
-    ? 'bg-navy-dark/80 backdrop-blur-xl border border-white/10 text-white shadow-xl rounded-2xl'
-    : 'bg-white border border-gray-200/90 text-gray-900 shadow-sm rounded-2xl';
+  const formattedDate = now.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
-  const subText = isGlassTheme ? 'text-gray-300' : 'text-gray-600';
-  const mutedText = isGlassTheme ? 'text-gray-400' : 'text-gray-400';
+  const formattedTime = now
+    .toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .toLowerCase();
+
+  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES['ice-blue'];
+
+  // Task progress metrics
+  const completedCount = tasks.filter((t) => t.completed).length;
+  const totalCount = tasks.length;
+  const overdueCount = tasks.filter((t) => !t.completed && t.isOverdue).length;
+  const latestMindset = mindsetHistory[mindsetHistory.length - 1]?.mindset || 'Calm';
+
+  // Prioritized Today list: show open/overdue first, then recently completed (max 5 visible on home so it never feels overwhelming)
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    if (a.isOverdue !== b.isOverdue) return a.isOverdue ? -1 : 1;
+    return 0;
+  });
+  const visibleTodayTasks = sortedTasks.slice(0, 5);
+
+  const glassCardClass = isGlassTheme
+    ? 'bg-[#06182c]/72 backdrop-blur-xl border border-cyan-400/35 shadow-[0_0_28px_rgba(34,211,238,0.14)] rounded-2xl'
+    : 'bg-[#0a1628] border border-cyan-400/25 shadow-lg rounded-2xl';
+
+  const glassButtonClass =
+    'bg-[#07223d]/75 hover:bg-[#0b3157]/85 backdrop-blur-md border border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.22)] hover:shadow-[0_0_26px_rgba(34,211,238,0.38)] transition-all duration-200 active:scale-[0.98]';
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* 1. Calm & Elegant Header Strip */}
-      <div className={`p-6 md:p-8 ${cardBg}`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div>
-            <div className={`text-xs font-medium uppercase tracking-wider ${mutedText} mb-1`}>
-              Saturday, 7 November 2026
-            </div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-white">
-              Good morning, Luke
-            </h1>
-            <p className={`text-sm mt-1.5 ${subText}`}>
-              Here is your daily overview. You have <span className="text-gold font-semibold">{openTasks.length} open tasks</span> and{' '}
-              <span className="text-gray-200 font-semibold">{appointments.length} appointments</span> today.
-            </p>
+    <div className="max-w-xl mx-auto space-y-5 pt-1" style={{ color: colorTheme.primaryHex }}>
+      {/* Top Row: My planner + Date & Time + Update Photo / Settings */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div
+            className="text-sm font-medium tracking-wide opacity-85"
+            style={{ color: colorTheme.subHex }}
+          >
+            My planner
           </div>
-
-          {/* Quick Capture & AI Parser Actions */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onOpenQuickCapture}
-              className="px-4 py-2.5 rounded-xl bg-gold hover:bg-gold-dark text-navy font-bold text-xs uppercase tracking-wider transition-all duration-200 shadow-sm flex items-center gap-1.5 hover:scale-[1.02]"
-            >
-              <span>+ Quick Capture</span>
-            </button>
-            <button
-              onClick={onOpenAiExtractor}
-              className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 border flex items-center gap-1.5 ${
-                isGlassTheme
-                  ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white'
-                  : 'bg-gray-50 hover:bg-gray-100 border-gray-300 text-gray-800'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-              <span>AI Task Parser</span>
-            </button>
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight leading-tight mt-0.5">
+            {formattedDate}
+          </h1>
+          <div className="font-sans text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
+            {formattedTime}
           </div>
         </div>
 
-        {/* Calm, Simplified Metrics Row (Clean pills instead of 4 heavy boxed progress bars) */}
-        <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-gray-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span><strong>{completedTasks.length}</strong> Completed</span>
-            </span>
-
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-gray-200">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span><strong>{openTasks.length}</strong> Open Today</span>
-            </span>
-
-            {carriedForwardTasks.length > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-sky-300">
-                <RotateCcw className="w-3 h-3 text-sky-400" />
-                <span><strong>{carriedForwardTasks.length}</strong> Carried Forward</span>
-              </span>
-            )}
-
-            {overdueTasks.length > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
-                <AlertCircle className="w-3 h-3 text-rose-400" />
-                <span><strong>{overdueTasks.length}</strong> Overdue Action</span>
-              </span>
-            )}
-          </div>
-
-          {/* Minimal Single Progress Bar */}
-          <div className="flex items-center gap-3 min-w-[180px]">
-            <span className={`text-[11px] ${mutedText}`}>{progressPercent}% Done</span>
-            <div className="flex-1 bg-white/10 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
+        {/* Top-Right Photo Upload & Settings */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onOpenUpdatePhoto}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 ${glassButtonClass}`}
+            style={{ color: colorTheme.primaryHex }}
+            title="Upload personal background photo"
+          >
+            <Camera className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Update photo</span>
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className={`p-2 rounded-xl ${glassButtonClass}`}
+            style={{ color: colorTheme.primaryHex }}
+            aria-label="Settings and text colour"
+            title="Text colour, security & backup"
+          >
+            <Settings className="w-4 h-4 text-cyan-300" />
+          </button>
         </div>
       </div>
 
-      {/* 2. Overdue / Carried Forward Priority Notice (Calm & Elegant) */}
-      {overdueTasks.length > 0 && (
-        <div className="p-4 rounded-xl bg-black/40 border border-rose-500/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="p-1.5 rounded-lg bg-rose-500/20 text-rose-400">
-              <RotateCcw className="w-4 h-4" />
-            </span>
-            <div className="text-xs">
-              <span className="font-semibold text-rose-300">Carried Forward: </span>
-              <span className="text-gray-200">{overdueTasks[0].title}</span>
-              <span className="text-gray-400 ml-1.5 italic">({overdueTasks[0].project})</span>
-            </div>
-          </div>
-          <button
-            onClick={() => onToggleTask(overdueTasks[0].id)}
-            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 self-start sm:self-auto transition-colors"
-          >
-            Mark Done
-          </button>
+      {/* Electric-Blue Primary Action Buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={onOpenAddTask}
+          className={`py-3 px-4 rounded-2xl flex items-center justify-center gap-2 font-semibold text-sm ${glassButtonClass}`}
+          style={{ color: colorTheme.primaryHex }}
+        >
+          <Plus className="w-4 h-4 text-cyan-300 stroke-[2.5]" />
+          <span>Add task</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenRecordThought}
+          className={`py-3 px-4 rounded-2xl flex items-center justify-center gap-2 font-semibold text-sm ${glassButtonClass}`}
+          style={{ color: colorTheme.primaryHex }}
+        >
+          <Mic className="w-4 h-4 text-cyan-300" />
+          <span>Record a thought</span>
+        </button>
+      </div>
+
+      {/* Card 1: Today */}
+      <div className={`p-5 ${glassCardClass}`}>
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="font-sans text-lg font-bold tracking-tight">Today</h2>
+          {tasks.length > 5 && (
+            <button
+              type="button"
+              onClick={onOpenProjects}
+              className="text-xs font-medium text-cyan-300 hover:text-cyan-200 underline underline-offset-4"
+            >
+              See all ({tasks.length})
+            </button>
+          )}
         </div>
-      )}
 
-      {/* 3. Main Two-Column Focus Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Today's Priority Task List */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className={`p-6 ${cardBg}`}>
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
-              <h2 className="font-heading font-bold text-lg text-white">Today's Focus</h2>
-              <span className={`text-xs ${mutedText}`}>
-                {completedTasks.length} of {totalTasks} finished
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              {tasks.map((t) => (
-                <div
-                  key={t.id}
-                  onClick={() => onToggleTask(t.id)}
-                  className={`p-3.5 rounded-xl border flex items-start gap-3 transition-all cursor-pointer ${
-                    t.completed
-                      ? 'opacity-50 bg-white/5 border-white/5'
-                      : isGlassTheme
-                      ? 'bg-black/25 hover:bg-black/40 border-white/10 hover:border-gold/30'
-                      : 'bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gold/40'
+        <div className="space-y-3">
+          {visibleTodayTasks.map((task) => (
+            <div
+              key={task.id}
+              onClick={() => onToggleTask(task.id)}
+              className="group flex items-center justify-between gap-3 py-1.5 px-2 -mx-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Rounded Square Checkbox matching reference screenshot */}
+                <button
+                  type="button"
+                  aria-label={`Toggle ${task.title}`}
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
+                    task.completed
+                      ? 'bg-emerald-400/20 border-emerald-400 text-emerald-300'
+                      : task.isOverdue
+                      ? 'border-amber-400/80 bg-amber-400/10 group-hover:border-amber-300'
+                      : 'border-cyan-300/60 bg-cyan-950/40 group-hover:border-cyan-300'
                   }`}
                 >
-                  <button
-                    className={`mt-0.5 transition-colors ${
-                      t.completed ? 'text-emerald-400' : 'text-gray-400 hover:text-gold'
-                    }`}
-                  >
-                    {t.completed ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : (
-                      <Circle className="w-4 h-4" />
-                    )}
-                  </button>
+                  {task.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </button>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`text-sm font-medium ${
-                          t.completed ? 'line-through text-gray-400' : 'text-gray-100'
-                        }`}
-                      >
-                        {t.title}
-                      </span>
-                      {t.priority === 'urgent' && (
-                        <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">
-                          Urgent
-                        </span>
-                      )}
-                      {t.priority === 'high' && (
-                        <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                          High
-                        </span>
-                      )}
-                    </div>
+                <span
+                  className={`text-[15px] font-medium truncate transition-opacity ${
+                    task.completed ? 'line-through opacity-45' : ''
+                  }`}
+                >
+                  {task.title}
+                </span>
+              </div>
 
-                    <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-gray-400">
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-gray-300">
-                        {t.project}
-                      </span>
-                      {t.dueTime && (
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                          <Clock className="w-3 h-3 text-gold" /> {t.dueTime}
-                        </span>
-                      )}
-                      {t.isCarriedForward && (
-                        <span className="text-[11px] text-sky-400 flex items-center gap-1">
-                          <RotateCcw className="w-2.5 h-2.5" /> Carried
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* Right-aligned time or overdue tag */}
+              <div className="shrink-0 text-xs font-medium">
+                {task.isOverdue && !task.completed ? (
+                  <span className="text-amber-300 font-semibold">Overdue</span>
+                ) : (
+                  <span style={{ color: colorTheme.subHex }} className="opacity-85">
+                    {task.dueTime || 'Today'}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Card 2: Your progress (Mint Green, Amber, Lilac neon accents + View charts) */}
+      <div className={`p-5 ${glassCardClass}`}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-sans text-lg font-bold tracking-tight">Your progress</h2>
+          <button
+            type="button"
+            onClick={onOpenViewCharts}
+            className="text-xs font-semibold text-cyan-300 hover:text-cyan-200 underline underline-offset-4 transition-colors"
+          >
+            View charts
+          </button>
         </div>
 
-        {/* Right Column: Appointments Agenda */}
-        <div className="space-y-4">
-          <div className={`p-6 ${cardBg}`}>
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-gold" />
-                <h3 className="font-heading font-bold text-base text-white">Appointments</h3>
-              </div>
-              <span className="text-xs text-gold font-mono font-semibold">
-                {appointments.length} scheduled
+        <div className="grid grid-cols-3 gap-2 items-center">
+          {/* Mint Green: Completed */}
+          <button
+            type="button"
+            onClick={onOpenViewCharts}
+            className="text-left group pr-2 border-r border-white/15"
+          >
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-emerald-200 truncate">
+                {completedCount} of {totalCount} done
               </span>
             </div>
-
-            <div className="space-y-3">
-              {appointments.map((app) => (
-                <div
-                  key={app.id}
-                  className="p-3 rounded-xl bg-black/25 border border-white/10 space-y-1"
-                >
-                  <div className="flex items-center justify-between text-xs text-gold font-medium">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {app.time}
-                    </span>
-                    <span className="uppercase text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-gray-300">
-                      {app.type}
-                    </span>
-                  </div>
-                  <h4 className="font-semibold text-xs text-gray-100">{app.title}</h4>
-                  <div className={`text-[11px] ${mutedText}`}>{app.location}</div>
-                </div>
-              ))}
+            {/* Segmented mint green pills */}
+            <div className="flex gap-1 mt-2">
+              {Array.from({ length: Math.min(totalCount || 5, 5) }).map((_, idx) => {
+                const filled =
+                  totalCount > 0 && idx < Math.round((completedCount / totalCount) * Math.min(totalCount, 5));
+                return (
+                  <span
+                    key={idx}
+                    className={`h-1.5 flex-1 rounded-full transition-all ${
+                      filled ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-white/15'
+                    }`}
+                  />
+                );
+              })}
             </div>
-          </div>
+          </button>
 
-          {/* Daily Mindful Prompt */}
-          <div className="p-4 rounded-xl bg-black/30 border border-white/10 text-xs">
-            <div className="flex items-center gap-1.5 text-gold font-bold uppercase tracking-wider text-[10px] mb-1">
-              <Sparkles className="w-3 h-3" />
-              <span>Daily Focus Reflection</span>
-            </div>
-            <p className="italic text-gray-300 leading-relaxed font-serif">
-              "The most impactful work comes not from answering everything today, but from addressing the single conversation you have been avoiding."
-            </p>
-          </div>
+          {/* Amber: Overdue */}
+          <button
+            type="button"
+            onClick={onOpenViewCharts}
+            className="flex items-center justify-center gap-1.5 px-2 border-r border-white/15 text-left hover:opacity-90"
+          >
+            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-amber-200 truncate">
+              {overdueCount} overdue
+            </span>
+          </button>
+
+          {/* Lilac: Mindset */}
+          <button
+            type="button"
+            onClick={onOpenViewCharts}
+            className="flex items-center justify-end gap-1.5 pl-1 text-right hover:opacity-90"
+          >
+            <Smile className="w-4 h-4 text-purple-300 shrink-0" />
+            <span className="text-xs sm:text-sm font-semibold text-purple-200 truncate">
+              Mindset: {latestMindset}
+            </span>
+          </button>
         </div>
       </div>
     </div>

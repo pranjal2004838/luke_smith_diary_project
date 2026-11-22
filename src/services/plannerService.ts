@@ -1,13 +1,25 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { Task, Appointment, DiaryEntry, Project, initialTasks, initialAppointments, initialDiaryEntries, initialProjects } from '../components/planner/mockData';
+import {
+  Task,
+  Appointment,
+  DiaryEntry,
+  Project,
+  MindsetCheckIn,
+  initialTasks,
+  initialAppointments,
+  initialDiaryEntries,
+  initialProjects,
+  initialMindsetHistory,
+} from '../components/planner/mockData';
 import { DashboardSettings } from '../components/planner/DesignCustomizer';
 
 const STORAGE_KEYS = {
-  TASKS: 'luke_planner_tasks',
-  APPOINTMENTS: 'luke_planner_appointments',
-  DIARY: 'luke_planner_diary',
-  PROJECTS: 'luke_planner_projects',
-  SETTINGS: 'luke_planner_settings',
+  TASKS: 'luke_planner_tasks_v2',
+  APPOINTMENTS: 'luke_planner_appointments_v2',
+  DIARY: 'luke_planner_diary_v2',
+  PROJECTS: 'luke_planner_projects_v2',
+  MINDSET: 'luke_planner_mindset_v2',
+  SETTINGS: 'luke_planner_settings_v2',
   AUTH: 'luke_planner_auth_user',
 };
 
@@ -90,7 +102,29 @@ export const plannerService = {
   },
 
   saveDiaryEntries(entries: DiaryEntry[]): void {
-    localStorage.setItem(STORAGE_KEYS.DIARY, JSON.stringify(entries));
+    try {
+      localStorage.setItem(STORAGE_KEYS.DIARY, JSON.stringify(entries));
+    } catch (err) {
+      console.warn('LocalStorage quota notice while saving diary:', err);
+    }
+  },
+
+  // Mindset Check-Ins
+  getMindsetHistory(): MindsetCheckIn[] {
+    const raw = localStorage.getItem(STORAGE_KEYS.MINDSET);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.MINDSET, JSON.stringify(initialMindsetHistory));
+      return initialMindsetHistory;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return initialMindsetHistory;
+    }
+  },
+
+  saveMindsetHistory(history: MindsetCheckIn[]): void {
+    localStorage.setItem(STORAGE_KEYS.MINDSET, JSON.stringify(history));
   },
 
   // Projects
@@ -121,15 +155,15 @@ export const plannerService = {
     }
   },
 
-  // Settings
+  // Settings (Electric-blue glass over Luke portrait + Ice Blue text default)
   getSettings(): DashboardSettings {
     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     const defaultSettings: DashboardSettings = {
       mockupMode: 'background',
-      backgroundImageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2000&q=80',
-      backgroundBlur: 'md',
-      cardOpacity: 85,
-      accentColor: '#f0a500',
+      backgroundImageUrl: '/luke-hero-hoodie.jpg',
+      backgroundBlur: 'sm',
+      photoVisibility: 55,
+      textColor: 'ice-blue',
     };
     if (!raw) return defaultSettings;
     try {
@@ -140,17 +174,22 @@ export const plannerService = {
   },
 
   saveSettings(settings: DashboardSettings): void {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    try {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    } catch (err) {
+      console.warn('LocalStorage quota notice while saving settings:', err);
+    }
   },
 
   // Export full backup
   exportAllData() {
     return {
-      version: '1.0',
+      version: '2.0',
       exportedAt: new Date().toISOString(),
       user: this.getStoredUser(),
       tasks: this.getTasks(),
       diaryEntries: this.getDiaryEntries(),
+      mindsetHistory: this.getMindsetHistory(),
       projects: this.getProjects(),
       appointments: this.getAppointments(),
       settings: this.getSettings(),

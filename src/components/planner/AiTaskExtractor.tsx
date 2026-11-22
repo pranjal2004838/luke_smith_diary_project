@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Check, 
@@ -8,9 +8,10 @@ import {
   Folder, 
   Flag, 
   ShieldCheck, 
-  Cpu
+  Cpu,
+  Clock
 } from 'lucide-react';
-import { Task, Project } from './mockData';
+import { Task, Project, FRIDAY_STR, TODAY_STR } from './mockData';
 
 interface AiTaskExtractorProps {
   initialPrompt?: string;
@@ -26,8 +27,80 @@ interface SuggestedTask {
   project: string;
   priority: 'urgent' | 'high' | 'medium' | 'low';
   dueDate: string;
+  dueTime: string;
   notes: string;
   approved: boolean;
+}
+
+function parseNoteIntoTasks(text: string, projects: Project[]): SuggestedTask[] {
+  const lower = text.toLowerCase();
+  if (lower.includes('editor') && lower.includes('production meeting')) {
+    return [
+      {
+        id: 'st-1',
+        title: 'Follow up with the editor',
+        project: projects[0]?.name || 'Book 13: "The Courage to Ask"',
+        priority: 'high',
+        dueDate: FRIDAY_STR,
+        dueTime: '10:00 am',
+        notes: 'Extracted from note: Follow up with the editor on Friday',
+        approved: true,
+      },
+      {
+        id: 'st-2',
+        title: 'Prepare three questions for the production meeting',
+        project: projects[1]?.name || 'Film & Media Production',
+        priority: 'medium',
+        dueDate: FRIDAY_STR,
+        dueTime: '2:00 pm',
+        notes: 'Extracted from note: prepare three questions for the production meeting',
+        approved: true,
+      },
+    ];
+  }
+
+  // Split custom thoughts cleanly on " and " or ". " or "; "
+  const clauses = text
+    .split(/(?:\s+and\s+|\.\s+|;\s+)/i)
+    .map((s) => s.trim().replace(/[.]+$/, ''))
+    .filter((s) => s.length > 3);
+
+  if (clauses.length === 0) {
+    return [
+      {
+        id: 'st-single',
+        title: text.slice(0, 70) || 'Follow up on note',
+        project: projects[0]?.name || 'Personal & Mindset',
+        priority: 'medium',
+        dueDate: TODAY_STR,
+        dueTime: '11:00 am',
+        notes: `Extracted from: "${text}"`,
+        approved: true,
+      },
+    ];
+  }
+
+  return clauses.map((clause, idx) => {
+    const capitalized = clause.charAt(0).toUpperCase() + clause.slice(1);
+    const guessesFilm = /film|studio|production|video|shoot/i.test(clause);
+    const guessesBook = /book|editor|chapter|galley|write|publish/i.test(clause);
+    const projectMatch = guessesBook
+      ? projects[0]?.name
+      : guessesFilm
+      ? projects[1]?.name
+      : projects[2]?.name || projects[0]?.name;
+
+    return {
+      id: `st-${Date.now()}-${idx}`,
+      title: capitalized,
+      project: projectMatch || 'Personal & Mindset',
+      priority: idx === 0 ? 'high' : 'medium',
+      dueDate: /friday/i.test(clause) ? FRIDAY_STR : TODAY_STR,
+      dueTime: idx === 0 ? '11:00 am' : '3:00 pm',
+      notes: `Pulled from note: "${clause}"`,
+      approved: true,
+    };
+  });
 }
 
 export default function AiTaskExtractor({
@@ -35,80 +108,30 @@ export default function AiTaskExtractor({
   projects,
   onAddTasks,
   onClose,
-  isGlassTheme = false,
 }: AiTaskExtractorProps) {
   const [inputText, setInputText] = useState(initialPrompt);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<'claude' | 'chatgpt'>('claude');
+  const [suggestedTasks, setSuggestedTasks] = useState<SuggestedTask[]>(() =>
+    parseNoteIntoTasks(initialPrompt, projects)
+  );
 
-  // Suggested tasks that will be generated
-  const [suggestedTasks, setSuggestedTasks] = useState<SuggestedTask[]>([
-    {
-      id: 'st-1',
-      title: 'Follow up with editor on galleys review',
-      project: 'Book 13: "The Courage to Ask"',
-      priority: 'high',
-      dueDate: '2026-11-13',
-      notes: 'Extracted from note: Follow up with the editor on Friday',
-      approved: true,
-    },
-    {
-      id: 'st-2',
-      title: 'Prepare three questions for the production meeting',
-      project: 'Real Direction Academy',
-      priority: 'medium',
-      dueDate: '2026-11-13',
-      notes: 'Extracted from note: prepare three questions for the production meeting',
-      approved: true,
-    },
-  ]);
+  useEffect(() => {
+    setInputText(initialPrompt);
+    setSuggestedTasks(parseNoteIntoTasks(initialPrompt, projects));
+  }, [initialPrompt, projects]);
 
   const handleRunAi = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      // Smart extraction simulation
-      if (inputText.toLowerCase().includes('editor') || inputText.toLowerCase().includes('production')) {
-        setSuggestedTasks([
-          {
-            id: 'st-1',
-            title: 'Follow up with editor regarding chapter edits',
-            project: 'Book 13: "The Courage to Ask"',
-            priority: 'high',
-            dueDate: '2026-11-13',
-            notes: 'Generated from note: Follow up with editor on Friday',
-            approved: true,
-          },
-          {
-            id: 'st-2',
-            title: 'Prepare three discussion questions for production meeting',
-            project: 'Real Direction Academy',
-            priority: 'medium',
-            dueDate: '2026-11-13',
-            notes: 'Generated from note: prepare three questions for production meeting',
-            approved: true,
-          },
-        ]);
-      } else {
-        // Fallback for custom user typed input
-        setSuggestedTasks([
-          {
-            id: 'st-custom-1',
-            title: inputText.slice(0, 60),
-            project: projects[0]?.name || 'General',
-            priority: 'medium',
-            dueDate: '2026-11-10',
-            notes: `Extracted from: "${inputText}"`,
-            approved: true,
-          },
-        ]);
-      }
-    }, 800);
+      setSuggestedTasks(parseNoteIntoTasks(inputText, projects));
+    }, 550);
   };
 
   const handleToggleTaskApproved = (id: string) => {
-    setSuggestedTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, approved: !t.approved } : t))
+    setSuggestedTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, approved: !t.approved } : t))
     );
   };
 
@@ -117,24 +140,25 @@ export default function AiTaskExtractor({
     field: keyof SuggestedTask,
     value: string
   ) => {
-    setSuggestedTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, [field]: value } : t))
+    setSuggestedTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, [field]: value } : t))
     );
   };
 
   const handleDeleteSuggestedTask = (id: string) => {
-    setSuggestedTasks(prev => prev.filter(t => t.id !== id));
+    setSuggestedTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
   const handleApproveAndSave = () => {
-    const approved = suggestedTasks.filter(t => t.approved);
+    const approved = suggestedTasks.filter((t) => t.approved);
     if (!approved.length) return;
 
-    const formattedTasks: Omit<Task, 'id'>[] = approved.map(t => ({
+    const formattedTasks: Omit<Task, 'id'>[] = approved.map((t) => ({
       title: t.title,
       project: t.project,
       priority: t.priority,
       dueDate: t.dueDate,
+      dueTime: t.dueTime || undefined,
       completed: false,
       notes: t.notes,
     }));
@@ -143,118 +167,104 @@ export default function AiTaskExtractor({
     onClose();
   };
 
-  const cardBg = isGlassTheme
-    ? 'bg-navy-dark/95 backdrop-blur-2xl border border-white/20 text-white shadow-2xl'
-    : 'bg-white border border-gray-200 text-gray-900 shadow-xl';
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className={`w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh] ${cardBg}`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh] bg-[#041222]/95 border border-cyan-400/35 shadow-[0_0_40px_rgba(34,211,238,0.2)] text-sky-50">
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-cyan-400/15 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 rounded-2xl bg-gradient-to-tr from-gold to-amber-500 text-navy shadow-lg shadow-gold/20">
-              <Sparkles className="w-5 h-5 fill-navy" />
+            <span className="p-2.5 rounded-2xl bg-cyan-500/20 border border-cyan-400/35 text-cyan-300">
+              <Sparkles className="w-5 h-5" />
             </span>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-heading font-bold text-xl">AI Smart Task Extractor</h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gold/20 text-gold border border-gold/30">
-                  Interactive Demo
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Automatically breaks unstructured notes and voice memos into discrete, actionable tasks.
+              <h2 className="font-sans font-bold text-lg sm:text-xl">Review AI-Extracted Tasks</h2>
+              <p className="text-xs text-sky-300/75 mt-0.5">
+                Edit titles, dates, or projects before saving to your planner
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-xl text-sky-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
-          {/* Provider Selector & Privacy Note */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-black/30 border border-white/10">
-              <Cpu className="w-4 h-4 text-gold" />
-              <span className="text-gray-300">Model Engine:</span>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-black/35 border border-white/10">
+              <Cpu className="w-4 h-4 text-cyan-300" />
+              <span className="text-sky-200">AI Engine:</span>
               <div className="flex items-center gap-1.5 ml-auto">
                 <button
                   type="button"
                   onClick={() => setSelectedProvider('claude')}
                   className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
                     selectedProvider === 'claude'
-                      ? 'bg-gold text-navy'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-cyan-400 text-[#04101e]'
+                      : 'text-sky-300 hover:text-white'
                   }`}
                 >
-                  Claude 3.5 Sonnet
+                  Claude
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedProvider('chatgpt')}
                   className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
                     selectedProvider === 'chatgpt'
-                      ? 'bg-gold text-navy'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-cyan-400 text-[#04101e]'
+                      : 'text-sky-300 hover:text-white'
                   }`}
                 >
-                  GPT-4o mini
+                  ChatGPT
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/25 text-emerald-200">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Zero-Retention Privacy: API data is never used to train models. Cost: ~$0.001/call.</span>
+              <span>Zero-Retention Privacy: Notes are never used to train models.</span>
             </div>
           </div>
 
           {/* Input Box */}
           <div>
-            <label className="block text-xs uppercase tracking-wider font-semibold mb-2 text-gray-300">
-              Voice Note Transcript or Typed Thought
+            <label className="block text-xs uppercase tracking-wider font-semibold mb-1.5 text-cyan-300">
+              Note or Voice Transcript
             </label>
-            <div className="relative">
-              <textarea
-                rows={3}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type or dictate anything (e.g., 'Email the venue organizer tomorrow morning and review speech slides by Thursday')..."
-                className="w-full px-4 py-3 rounded-2xl bg-black/40 border border-white/15 text-white text-sm focus:outline-none focus:ring-2 focus:ring-gold/50"
-              />
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-[11px] text-gray-400">
-                Try Luke's brief example above, or type your own stream of thought.
-              </span>
+            <textarea
+              rows={2}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Type or paste a note..."
+              className="w-full px-4 py-3 rounded-2xl bg-black/40 border border-cyan-400/25 text-white text-sm focus:outline-none focus:border-cyan-300"
+            />
+            <div className="flex items-center justify-end mt-2">
               <button
                 type="button"
                 onClick={handleRunAi}
-                disabled={isProcessing || !inputText}
-                className="px-4 py-2 rounded-xl bg-gold hover:bg-gold-dark text-navy font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition-all disabled:opacity-50"
+                disabled={isProcessing || !inputText.trim()}
+                className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 transition-all disabled:opacity-50"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{isProcessing ? 'Analyzing Note...' : 'Extract Suggested Tasks'}</span>
+                <span>{isProcessing ? 'Extracting...' : 'Re-Extract Tasks'}</span>
               </button>
             </div>
           </div>
 
-          {/* Extracted Tasks Preview & Edit Section */}
+          {/* Extracted Tasks Preview & Edit */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>Suggested Actionable Tasks</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gold/15 text-gold font-normal">
-                  {suggestedTasks.filter(t => t.approved).length} selected to add
+              <h3 className="font-sans font-bold text-sm flex items-center gap-2">
+                <span>Suggested Tasks</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+                  {suggestedTasks.filter((t) => t.approved).length} selected
                 </span>
               </h3>
-              <span className="text-xs text-gray-400">Edit any title or date before saving</span>
+              <span className="text-xs text-sky-300/70">Tap any field to edit before saving</span>
             </div>
 
             <div className="space-y-3">
@@ -263,7 +273,7 @@ export default function AiTaskExtractor({
                   key={st.id}
                   className={`p-4 rounded-2xl border transition-all ${
                     st.approved
-                      ? 'bg-black/40 border-gold/40 shadow-sm'
+                      ? 'bg-black/40 border-cyan-400/40'
                       : 'bg-black/20 border-white/10 opacity-50'
                   }`}
                 >
@@ -271,17 +281,16 @@ export default function AiTaskExtractor({
                     <button
                       type="button"
                       onClick={() => handleToggleTaskApproved(st.id)}
-                      className={`mt-1 w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
+                      className={`mt-1 w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
                         st.approved
-                          ? 'bg-gold border-gold text-navy'
-                          : 'border-gray-500 text-transparent'
+                          ? 'bg-cyan-400 border-cyan-400 text-[#04101e]'
+                          : 'border-sky-400/40 text-transparent'
                       }`}
                     >
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
                     </button>
 
                     <div className="flex-1 space-y-3">
-                      {/* Task Title Editable Input */}
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
@@ -289,76 +298,76 @@ export default function AiTaskExtractor({
                           onChange={(e) =>
                             handleUpdateTaskField(st.id, 'title', e.target.value)
                           }
-                          className="w-full bg-transparent font-medium text-sm text-gray-100 border-b border-white/10 pb-1 focus:border-gold focus:outline-none"
+                          className="w-full bg-transparent font-semibold text-sm text-white border-b border-white/15 pb-1 focus:border-cyan-300 focus:outline-none"
                         />
                         <button
+                          type="button"
                           onClick={() => handleDeleteSuggestedTask(st.id)}
-                          className="text-gray-500 hover:text-rose-400 p-1"
+                          className="text-sky-300/60 hover:text-rose-400 p-1"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
 
-                      {/* Meta Selectors: Project, Priority, Due Date */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                        {/* Project selector */}
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                          <Folder className="w-3.5 h-3.5 text-gold shrink-0" />
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 sm:col-span-2">
+                          <Folder className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
                           <select
                             value={st.project}
                             onChange={(e) =>
                               handleUpdateTaskField(st.id, 'project', e.target.value)
                             }
-                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full truncate"
+                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full truncate"
                           >
-                            {projects.map(p => (
-                              <option key={p.id} value={p.name} className="bg-navy text-white">
+                            {projects.map((p) => (
+                              <option key={p.id} value={p.name} className="bg-[#041222] text-white">
                                 {p.name}
                               </option>
                             ))}
                           </select>
                         </div>
 
-                        {/* Priority Selector */}
                         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                          <Flag className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <Flag className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                           <select
                             value={st.priority}
                             onChange={(e) =>
-                              handleUpdateTaskField(
-                                st.id,
-                                'priority',
-                                e.target.value as SuggestedTask['priority']
-                              )
+                              handleUpdateTaskField(st.id, 'priority', e.target.value)
                             }
-                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full"
+                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full"
                           >
-                            <option value="urgent" className="bg-navy text-white">Urgent</option>
-                            <option value="high" className="bg-navy text-white">High</option>
-                            <option value="medium" className="bg-navy text-white">Medium</option>
-                            <option value="low" className="bg-navy text-white">Low</option>
+                            <option value="urgent" className="bg-[#041222] text-white">Urgent</option>
+                            <option value="high" className="bg-[#041222] text-white">High</option>
+                            <option value="medium" className="bg-[#041222] text-white">Medium</option>
+                            <option value="low" className="bg-[#041222] text-white">Low</option>
                           </select>
                         </div>
 
-                        {/* Due Date */}
                         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                          <Calendar className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                          <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
                           <input
                             type="date"
                             value={st.dueDate}
                             onChange={(e) =>
                               handleUpdateTaskField(st.id, 'dueDate', e.target.value)
                             }
-                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full"
+                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full"
                           />
                         </div>
                       </div>
 
-                      {st.notes && (
-                        <p className="text-[11px] text-gray-400 italic">
-                          {st.notes}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2 text-xs">
+                        <Clock className="w-3 h-3 text-cyan-300" />
+                        <input
+                          type="text"
+                          value={st.dueTime}
+                          onChange={(e) =>
+                            handleUpdateTaskField(st.id, 'dueTime', e.target.value)
+                          }
+                          placeholder="Time (e.g. 2:00 pm)"
+                          className="bg-transparent text-xs text-sky-200 border-b border-white/10 focus:border-cyan-300 focus:outline-none w-28"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -368,25 +377,25 @@ export default function AiTaskExtractor({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/10 flex items-center justify-between bg-black/40">
-          <div className="text-xs text-gray-400">
-            {suggestedTasks.filter(t => t.approved).length} tasks ready to create
+        <div className="p-5 sm:p-6 border-t border-cyan-400/15 flex items-center justify-between bg-black/40">
+          <div className="text-xs text-sky-300/75">
+            {suggestedTasks.filter((t) => t.approved).length} tasks ready to save
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white"
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-sky-300 hover:text-white"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleApproveAndSave}
-              className="px-5 py-2.5 rounded-xl bg-gold hover:bg-gold-dark text-navy font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2 hover:scale-[1.02] transition-transform"
+              className="px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2"
             >
               <Check className="w-4 h-4" />
-              <span>Approve & Add to Planner</span>
+              <span>Approve & Save Tasks</span>
             </button>
           </div>
         </div>

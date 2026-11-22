@@ -1,45 +1,51 @@
 import { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, 
-  BookOpen, 
-  CheckSquare, 
+  Home, 
   Calendar as CalendarIcon, 
-  Sparkles, 
-  Palette, 
-  Lock, 
-  ShieldCheck,
-  User,
-  Download,
+  BookOpen, 
+  FolderKanban,
+  Camera,
+  Settings,
   Smartphone
 } from 'lucide-react';
 import { 
   Task, 
   Appointment, 
   DiaryEntry, 
-  Project 
+  Project,
+  MindsetCheckIn,
+  MindsetType,
+  TODAY_STR
 } from './mockData';
 import TodayDashboard from './TodayDashboard';
 import DiaryQuickCapture from './DiaryQuickCapture';
 import TasksProjects from './TasksProjects';
 import CalendarView from './CalendarView';
 import AiTaskExtractor from './AiTaskExtractor';
-import DesignCustomizer, { DashboardSettings } from './DesignCustomizer';
+import DesignCustomizer, { DashboardSettings, TEXT_COLOR_THEMES } from './DesignCustomizer';
 import AuthModal from './AuthModal';
 import ExportModal from './ExportModal';
+import PerformanceChartsModal from './PerformanceChartsModal';
+import QuickAddTaskModal from './QuickAddTaskModal';
+import QuickThoughtModal from './QuickThoughtModal';
 import { plannerService, AuthUser } from '../../services/plannerService';
 
 export default function PlannerApp() {
-  // Navigation tabs
-  const [activeTab, setActiveTab] = useState<'today' | 'diary' | 'tasks' | 'calendar'>('today');
+  const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'diary' | 'projects'>('home');
 
-  // Application Data State loaded from plannerService (localStorage / Supabase)
+  // Persistent Application State
   const [tasks, setTasks] = useState<Task[]>(() => plannerService.getTasks());
   const [appointments] = useState<Appointment[]>(() => plannerService.getAppointments());
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>(() => plannerService.getDiaryEntries());
   const [projects] = useState<Project[]>(() => plannerService.getProjects());
+  const [mindsetHistory, setMindsetHistory] = useState<MindsetCheckIn[]>(() => plannerService.getMindsetHistory());
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => plannerService.getStoredUser());
+  const [settings, setSettings] = useState<DashboardSettings>(() => plannerService.getSettings());
 
-  // Modals and Drawers
+  // Modals & Drawers
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [isRecordThoughtOpen, setIsRecordThoughtOpen] = useState(false);
+  const [isChartsOpen, setIsChartsOpen] = useState(false);
   const [isAiExtractorOpen, setIsAiExtractorOpen] = useState(false);
   const [aiExtractorPrompt, setAiExtractorPrompt] = useState<string | undefined>(undefined);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
@@ -47,12 +53,9 @@ export default function PlannerApp() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [showPwaPrompt, setShowPwaPrompt] = useState(false);
 
-  // Design Settings (Mockup 1 vs Mockup 2)
-  const [settings, setSettings] = useState<DashboardSettings>(() => plannerService.getSettings());
-
   const isGlassTheme = settings.mockupMode === 'background';
+  const colorTheme = TEXT_COLOR_THEMES[settings.textColor] || TEXT_COLOR_THEMES['ice-blue'];
 
-  // Persist tasks and entries when updated
   useEffect(() => {
     plannerService.saveTasks(tasks);
   }, [tasks]);
@@ -62,13 +65,27 @@ export default function PlannerApp() {
   }, [diaryEntries]);
 
   useEffect(() => {
+    plannerService.saveMindsetHistory(mindsetHistory);
+  }, [mindsetHistory]);
+
+  useEffect(() => {
     plannerService.saveSettings(settings);
   }, [settings]);
 
   // Handlers
   const handleToggleTask = (id: string) => {
-    setTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  };
+
+  const handleMoveOverdueToToday = (id: string) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === id
+          ? { ...t, dueDate: TODAY_STR, isOverdue: false, isCarriedForward: true }
+          : t
+      )
     );
   };
 
@@ -77,7 +94,7 @@ export default function PlannerApp() {
       ...newTask,
       id: `task-${Date.now()}`,
     };
-    setTasks(prev => [task, ...prev]);
+    setTasks((prev) => [task, ...prev]);
   };
 
   const handleAddMultipleTasks = (newTasks: Omit<Task, 'id'>[]) => {
@@ -85,7 +102,7 @@ export default function PlannerApp() {
       ...t,
       id: `task-ai-${Date.now()}-${i}`,
     }));
-    setTasks(prev => [...formatted, ...prev]);
+    setTasks((prev) => [...formatted, ...prev]);
   };
 
   const handleAddDiaryEntry = (entry: Omit<DiaryEntry, 'id'>) => {
@@ -93,7 +110,18 @@ export default function PlannerApp() {
       ...entry,
       id: `entry-${Date.now()}`,
     };
-    setDiaryEntries(prev => [newEntry, ...prev]);
+    setDiaryEntries((prev) => [newEntry, ...prev]);
+  };
+
+  const handleLogMindset = (mindset: MindsetType, note?: string) => {
+    const checkIn: MindsetCheckIn = {
+      id: `m-${Date.now()}`,
+      date: TODAY_STR,
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase(),
+      mindset,
+      note,
+    };
+    setMindsetHistory((prev) => [...prev, checkIn]);
   };
 
   const handleExtractTasksFromNote = (text: string) => {
@@ -102,7 +130,7 @@ export default function PlannerApp() {
   };
 
   const handleUpdateSettings = (newSettings: Partial<DashboardSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
   const handleLogin = async (email: string) => {
@@ -115,239 +143,109 @@ export default function PlannerApp() {
     setCurrentUser(null);
   };
 
+  // Convert photoVisibility (10..95) into overlay darkness (higher visibility = lighter overlay)
+  const overlayOpacity = Math.max(0.18, Math.min(0.92, 1 - settings.photoVisibility / 115));
+
   return (
-    <div className="relative min-h-screen font-sans selection:bg-gold selection:text-navy">
-      {/* Dynamic Background Image Layer (Mockup 2) */}
+    <div
+      className="relative min-h-screen font-sans selection:bg-cyan-400 selection:text-[#04101e]"
+      style={{ color: colorTheme.primaryHex }}
+    >
+      {/* Dynamic Background Photo Layer */}
       {isGlassTheme ? (
-        <div className="fixed inset-0 z-0">
+        <div className="fixed inset-0 z-0 overflow-hidden bg-[#020a14]">
           <img
             src={settings.backgroundImageUrl}
-            alt="Dashboard Background"
-            className="w-full h-full object-cover fixed inset-0"
-          />
-          {/* Frosted / Tinted Dark Overlay */}
-          <div
-            className="fixed inset-0 bg-navy-dark transition-opacity duration-300"
+            alt="Personal background"
+            className="w-full h-full object-cover object-top fixed inset-0 transition-all duration-300"
             style={{
-              opacity: (settings.cardOpacity / 100) * 0.85,
-              backdropFilter:
+              filter:
                 settings.backgroundBlur === 'none'
                   ? 'none'
                   : settings.backgroundBlur === 'sm'
-                  ? 'blur(4px)'
+                  ? 'blur(2px)'
                   : settings.backgroundBlur === 'md'
-                  ? 'blur(10px)'
-                  : 'blur(20px)',
+                  ? 'blur(6px)'
+                  : 'blur(14px)',
+            }}
+          />
+          {/* Moody Electric-Blue Gradient Overlay keeping text readable */}
+          <div
+            className="fixed inset-0 transition-opacity duration-300"
+            style={{
+              background:
+                'radial-gradient(circle at 80% 35%, rgba(14, 116, 144, 0.28), rgba(2, 12, 27, 0.94) 70%)',
+              opacity: overlayOpacity,
             }}
           />
         </div>
       ) : (
-        /* Mockup 1: Clean Minimalist Background */
-        <div className="fixed inset-0 z-0 bg-[#0c101c]" />
+        <div className="fixed inset-0 z-0 bg-[#040d1a]" />
       )}
 
-      {/* Main Container */}
-      <div className="relative z-10 flex flex-col min-h-screen text-gray-100">
-        {/* Top Bar / Client Reassurance & Mockup Switcher Header */}
-        <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-md border-b border-white/10 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="font-heading font-bold text-sm tracking-wide text-white">
-                Luke Smith
-              </span>
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="text-[11px] px-2.5 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-medium hidden sm:inline-flex items-center gap-1 hover:bg-gold/25 transition-colors"
-              >
-                <Lock className="w-3 h-3" />
-                <span>{currentUser ? 'Authenticated: Luke Smith' : 'Private Access'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Controls: Mockup Switcher, Theme, Backup, Auth */}
-          <div className="flex items-center gap-2">
-            {/* Quick Mockup Switcher Pills */}
-            <div className="flex items-center rounded-xl bg-black/40 p-1 border border-white/15 text-xs">
-              <button
-                onClick={() => handleUpdateSettings({ mockupMode: 'clean' })}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                  settings.mockupMode === 'clean'
-                    ? 'bg-gold text-navy font-bold shadow-sm'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Mockup 1: Clean
-              </button>
-              <button
-                onClick={() => handleUpdateSettings({ mockupMode: 'background' })}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                  settings.mockupMode === 'background'
-                    ? 'bg-gold text-navy font-bold shadow-sm'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Mockup 2: Visual
-              </button>
-            </div>
-
-            {/* Theme customizer */}
-            <button
-              onClick={() => setIsCustomizerOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gold border border-white/15 transition-all"
-              title="Change Background Wallpaper & Styles"
-            >
-              <Palette className="w-4 h-4" />
-            </button>
-
-            {/* Export & Backup */}
-            <button
-              onClick={() => setIsExportOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-emerald-400 border border-white/15 transition-all"
-              title="Backup & Export Data (JSON/CSV)"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-
-            {/* User Profile / Auth */}
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 border border-white/15 transition-all"
-              title="Security & Account Access"
-            >
-              <User className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* PWA Mobile Installation Notice Bar */}
+      {/* Main Content Container */}
+      <div className="relative z-10 flex flex-col min-h-screen pb-28">
+        {/* Mobile App Install Help Banner */}
         {showPwaPrompt && (
-          <div className="bg-gradient-to-r from-indigo-900/90 to-purple-900/90 border-b border-indigo-500/30 px-4 py-2 text-xs flex items-center justify-between text-indigo-100">
+          <div className="bg-[#06203d]/95 border-b border-cyan-400/30 px-4 py-2.5 text-xs flex items-center justify-between text-sky-100">
             <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-indigo-300" />
+              <Smartphone className="w-4 h-4 text-cyan-300 shrink-0" />
               <span>
-                <strong>Mobile App Installation:</strong> On iPhone Safari, tap <strong>Share → Add to Home Screen</strong>. On Android Chrome, tap <strong>Menu → Install App</strong>.
+                <strong>Install on iPhone:</strong> In Safari tap <strong>Share → Add to Home Screen</strong>.
               </span>
             </div>
             <button
+              type="button"
               onClick={() => setShowPwaPrompt(false)}
-              className="text-xs text-indigo-300 hover:text-white underline ml-4"
+              className="text-xs text-cyan-300 hover:text-white underline ml-4 shrink-0"
             >
-              Dismiss
+              Close
             </button>
           </div>
         )}
 
-        {/* Sub-Header Navigation Tabs */}
-        <div className="bg-black/30 backdrop-blur-sm border-b border-white/10 px-4 md:px-8 py-2.5">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto">
-            <nav className="flex items-center gap-1.5 md:gap-3 text-xs md:text-sm font-semibold whitespace-nowrap">
+        {/* Slim utility header only on secondary tabs (Home tab keeps Luke's exact screenshot layout) */}
+        {activeTab !== 'home' && (
+          <div className="max-w-5xl w-full mx-auto px-4 pt-4 flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300/80">
+              My planner
+            </span>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setActiveTab('today')}
-                className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
-                  activeTab === 'today'
-                    ? 'bg-gold text-navy font-bold shadow-md'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                }`}
+                type="button"
+                onClick={() => setIsCustomizerOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-[#07223d]/75 hover:bg-[#0b3157] border border-cyan-400/40 text-xs font-semibold flex items-center gap-1.5"
               >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Today Dashboard</span>
+                <Camera className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Update photo</span>
               </button>
-
               <button
-                onClick={() => setActiveTab('diary')}
-                className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
-                  activeTab === 'diary'
-                    ? 'bg-gold text-navy font-bold shadow-md'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                }`}
+                type="button"
+                onClick={() => setIsCustomizerOpen(true)}
+                className="p-2 rounded-xl bg-[#07223d]/75 hover:bg-[#0b3157] border border-cyan-400/40"
+                aria-label="Settings"
               >
-                <BookOpen className="w-4 h-4" />
-                <span>Diary & Quick Capture</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
-                  activeTab === 'tasks'
-                    ? 'bg-gold text-navy font-bold shadow-md'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <CheckSquare className="w-4 h-4" />
-                <span>Tasks & Projects</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('calendar')}
-                className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
-                  activeTab === 'calendar'
-                    ? 'bg-gold text-navy font-bold shadow-md'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <CalendarIcon className="w-4 h-4" />
-                <span>Calendar & Reminders</span>
-              </button>
-            </nav>
-
-            {/* AI Action Trigger in Navigation */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setShowPwaPrompt(true)}
-                className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 text-xs font-medium flex items-center gap-1 transition-colors"
-                title="Phone App Setup"
-              >
-                <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
-                <span className="hidden md:inline">Phone App</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setAiExtractorPrompt('Follow up with the editor on Friday and prepare three questions for the production meeting.');
-                  setIsAiExtractorOpen(true);
-                }}
-                className="px-3 py-1.5 rounded-lg bg-gold/15 hover:bg-gold/25 border border-gold/40 text-gold text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>AI Task Parser</span>
+                <Settings className="w-4 h-4 text-cyan-300" />
               </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Main Body Content */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-8">
-          {activeTab === 'today' && (
+        {/* Active View */}
+        <main className="flex-1 w-full mx-auto px-4 sm:px-6 pt-5 sm:pt-7">
+          {activeTab === 'home' && (
             <TodayDashboard
               tasks={tasks}
-              appointments={appointments}
+              mindsetHistory={mindsetHistory}
+              textColor={settings.textColor}
+              isGlassTheme={isGlassTheme}
               onToggleTask={handleToggleTask}
-              onOpenQuickCapture={() => setActiveTab('diary')}
-              onOpenAiExtractor={() => {
-                setAiExtractorPrompt('Follow up with the editor on Friday and prepare three questions for the production meeting.');
-                setIsAiExtractorOpen(true);
-              }}
-              isGlassTheme={isGlassTheme}
-            />
-          )}
-
-          {activeTab === 'diary' && (
-            <DiaryQuickCapture
-              entries={diaryEntries}
-              onAddEntry={handleAddDiaryEntry}
-              onExtractTasksFromNote={handleExtractTasksFromNote}
-              isGlassTheme={isGlassTheme}
-            />
-          )}
-
-          {activeTab === 'tasks' && (
-            <TasksProjects
-              tasks={tasks}
-              projects={projects}
-              onToggleTask={handleToggleTask}
-              onAddTask={handleAddTask}
-              isGlassTheme={isGlassTheme}
+              onOpenAddTask={() => setIsAddTaskOpen(true)}
+              onOpenRecordThought={() => setIsRecordThoughtOpen(true)}
+              onOpenViewCharts={() => setIsChartsOpen(true)}
+              onOpenUpdatePhoto={() => setIsCustomizerOpen(true)}
+              onOpenSettings={() => setIsCustomizerOpen(true)}
+              onOpenProjects={() => setActiveTab('projects')}
             />
           )}
 
@@ -355,35 +253,99 @@ export default function PlannerApp() {
             <CalendarView
               appointments={appointments}
               tasks={tasks}
+              textColor={settings.textColor}
+              isGlassTheme={isGlassTheme}
+            />
+          )}
+
+          {activeTab === 'diary' && (
+            <DiaryQuickCapture
+              entries={diaryEntries}
+              textColor={settings.textColor}
+              onAddEntry={handleAddDiaryEntry}
+              onLogMindset={handleLogMindset}
+              onExtractTasksFromNote={handleExtractTasksFromNote}
+              isGlassTheme={isGlassTheme}
+            />
+          )}
+
+          {activeTab === 'projects' && (
+            <TasksProjects
+              tasks={tasks}
+              projects={projects}
+              textColor={settings.textColor}
+              onToggleTask={handleToggleTask}
+              onAddTask={handleAddTask}
+              onMoveOverdueToToday={handleMoveOverdueToToday}
               isGlassTheme={isGlassTheme}
             />
           )}
         </main>
-
-        {/* Footer / Architecture & Privacy Guarantee */}
-        <footer className="mt-auto border-t border-white/10 bg-black/50 backdrop-blur-md px-6 py-4 text-xs text-gray-400">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-emerald-400">
-              <ShieldCheck className="w-4 h-4" />
-              <span>
-                <strong>100% Private Vault:</strong> Row-Level Security (RLS) active. Personal diary entries are strictly user-scoped.
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-gray-400">
-              <span>PWA Ready (iOS & Android)</span>
-              <span>•</span>
-              <span>Claude & GPT-4o mini Pipeline</span>
-              <span>•</span>
-              <button
-                onClick={() => setIsExportOpen(true)}
-                className="text-gold hover:underline flex items-center gap-1"
-              >
-                <span>Export Data</span>
-              </button>
-            </div>
-          </div>
-        </footer>
       </div>
+
+      {/* Floating Bottom Glass Navigation Tray (Matching Luke's Design Reference) */}
+      <nav
+        aria-label="Primary navigation"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md"
+      >
+        <div className="bg-[#06182c]/85 backdrop-blur-2xl border border-cyan-400/35 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_24px_rgba(34,211,238,0.18)] rounded-2xl p-1.5 grid grid-cols-4 gap-1">
+          {[
+            { id: 'home', label: 'Home', icon: Home },
+            { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
+            { id: 'diary', label: 'Diary', icon: BookOpen },
+            { id: 'projects', label: 'Projects', icon: FolderKanban },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id as typeof activeTab)}
+                className={`py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all duration-200 ${
+                  active
+                    ? 'bg-cyan-500/25 border border-cyan-400/55 shadow-[0_0_16px_rgba(34,211,238,0.3)] text-white'
+                    : 'text-sky-200/75 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${active ? 'text-cyan-300' : ''}`} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Quick Add Task Modal (+ Add task button) */}
+      {isAddTaskOpen && (
+        <QuickAddTaskModal
+          projects={projects}
+          onAddTask={handleAddTask}
+          onClose={() => setIsAddTaskOpen(false)}
+        />
+      )}
+
+      {/* Quick Thought & Voice Recorder Modal (Record a thought button) */}
+      {isRecordThoughtOpen && (
+        <QuickThoughtModal
+          onSaveEntry={handleAddDiaryEntry}
+          onExtractTasks={handleExtractTasksFromNote}
+          onLogMindset={handleLogMindset}
+          onClose={() => setIsRecordThoughtOpen(false)}
+        />
+      )}
+
+      {/* Performance Charts & Mindset Modal (View charts button) */}
+      {isChartsOpen && (
+        <PerformanceChartsModal
+          tasks={tasks}
+          mindsetHistory={mindsetHistory}
+          onToggleTask={handleToggleTask}
+          onMoveOverdueToToday={handleMoveOverdueToToday}
+          onLogMindset={handleLogMindset}
+          onClose={() => setIsChartsOpen(false)}
+        />
+      )}
 
       {/* AI Task Extractor Modal */}
       {isAiExtractorOpen && (
@@ -396,12 +358,15 @@ export default function PlannerApp() {
         />
       )}
 
-      {/* Theme & Mockup Customizer Drawer */}
+      {/* Appearance, Photo Upload & Text Colour Customizer */}
       {isCustomizerOpen && (
         <DesignCustomizer
           settings={settings}
           onUpdateSettings={handleUpdateSettings}
           onClose={() => setIsCustomizerOpen(false)}
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenExport={() => setIsExportOpen(true)}
+          onShowPwaInfo={() => setShowPwaPrompt(true)}
         />
       )}
 
