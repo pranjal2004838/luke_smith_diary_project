@@ -366,7 +366,7 @@ export default function DiaryQuickCapture({
             )}
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => setSelectedTag(null)}

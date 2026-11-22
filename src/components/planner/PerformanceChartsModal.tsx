@@ -54,8 +54,11 @@ export default function PerformanceChartsModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-3xl rounded-3xl overflow-hidden bg-[#041222]/95 border border-cyan-400/30 shadow-[0_0_40px_rgba(34,211,238,0.18)] text-sky-50 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      <div
+        className="w-full max-w-3xl rounded-3xl overflow-hidden border border-cyan-400/40 shadow-[0_0_40px_rgba(34,211,238,0.25)] text-sky-50 flex flex-col max-h-[90vh]"
+        style={{ backgroundColor: '#041222' }}
+      >
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-cyan-400/15 flex items-center justify-between">
           <div className="flex items-center gap-3">

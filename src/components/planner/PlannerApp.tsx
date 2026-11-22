@@ -184,7 +184,7 @@ export default function PlannerApp() {
       )}
 
       {/* Main Content Container */}
-      <div className="relative z-10 flex flex-col min-h-screen pb-28">
+      <div className="relative z-10 flex flex-col min-h-screen pb-32">
         {/* Mobile App Install Help Banner */}
         {showPwaPrompt && (
           <div className="bg-[#06203d]/95 border-b border-cyan-400/30 px-4 py-2.5 text-xs flex items-center justify-between text-sky-100">

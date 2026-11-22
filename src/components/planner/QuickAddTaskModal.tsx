@@ -37,8 +37,11 @@ export default function QuickAddTaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg rounded-3xl overflow-hidden bg-[#041222]/95 border border-cyan-400/35 shadow-[0_0_40px_rgba(34,211,238,0.2)] text-sky-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      <div
+        className="w-full max-w-lg rounded-3xl overflow-hidden border border-cyan-400/40 shadow-[0_0_40px_rgba(34,211,238,0.25)] text-sky-50"
+        style={{ backgroundColor: '#041222' }}
+      >
         {/* Header */}
         <div className="p-5 border-b border-cyan-400/15 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

@@ -31,6 +31,7 @@ export default function TasksProjects({
 }: TasksProjectsProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'overdue' | 'carried'>('all');
+  const [priorityFilter, setPriorityFilter] = useState<'all' | Task['priority']>('all');
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
 
   const [newTitle, setNewTitle] = useState('');
@@ -53,6 +54,7 @@ export default function TasksProjects({
       t.project === projects.find((p) => p.id === selectedProjectId)?.name;
 
     if (!matchesProject) return false;
+    if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
 
     if (filterStatus === 'open') return !t.completed && !t.isOverdue;
     if (filterStatus === 'completed') return t.completed;
@@ -233,27 +235,42 @@ export default function TasksProjects({
 
       {/* Task List */}
       <div className={`p-5 sm:p-6 ${cardBg}`}>
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 border-b border-white/10">
-          {[
-            { id: 'all', label: `All (${tasks.length})` },
-            { id: 'open', label: `Open (${tasks.filter((t) => !t.completed && !t.isOverdue).length})` },
-            { id: 'overdue', label: `Overdue (${tasks.filter((t) => !t.completed && t.isOverdue).length})` },
-            { id: 'carried', label: `Carried (${tasks.filter((t) => t.isCarriedForward).length})` },
-            { id: 'completed', label: `Done (${tasks.filter((t) => t.completed).length})` },
-          ].map((tab) => (
-            <button
-              type="button"
-              key={tab.id}
-              onClick={() => setFilterStatus(tab.id as typeof filterStatus)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                filterStatus === tab.id
-                  ? 'bg-cyan-400 text-[#04101e] font-bold'
-                  : 'bg-white/10 text-sky-200 hover:bg-white/15'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-white/10">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'all', label: `All (${tasks.length})` },
+              { id: 'open', label: `Open (${tasks.filter((t) => !t.completed && !t.isOverdue).length})` },
+              { id: 'overdue', label: `Overdue (${tasks.filter((t) => !t.completed && t.isOverdue).length})` },
+              { id: 'carried', label: `Carried (${tasks.filter((t) => t.isCarriedForward).length})` },
+              { id: 'completed', label: `Done (${tasks.filter((t) => t.completed).length})` },
+            ].map((tab) => (
+              <button
+                type="button"
+                key={tab.id}
+                onClick={() => setFilterStatus(tab.id as typeof filterStatus)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                  filterStatus === tab.id
+                    ? 'bg-cyan-400 text-[#04101e] font-bold'
+                    : 'bg-white/10 text-sky-200 hover:bg-white/15'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <select
+            aria-label="Filter by priority"
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value as 'all' | Task['priority'])}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-black/40 border border-cyan-400/25 text-sky-100 focus:outline-none focus:border-cyan-300"
+          >
+            <option value="all" className="bg-[#041222]">All Priorities</option>
+            <option value="urgent" className="bg-[#041222]">Urgent</option>
+            <option value="high" className="bg-[#041222]">High</option>
+            <option value="medium" className="bg-[#041222]">Medium</option>
+            <option value="low" className="bg-[#041222]">Low</option>
+          </select>
         </div>
 
         <div className="space-y-2.5">
@@ -284,11 +301,24 @@ export default function TasksProjects({
                 </button>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className={`text-sm font-medium ${t.completed ? 'line-through opacity-60' : ''}`}>
                       {t.title}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      <span
+                        className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
+                          t.priority === 'urgent'
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-400/35'
+                            : t.priority === 'high'
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-400/35'
+                            : t.priority === 'medium'
+                            ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30'
+                            : 'bg-white/10 text-sky-300 border-white/15'
+                        }`}
+                      >
+                        {t.priority}
+                      </span>
                       {t.isOverdue && !t.completed && (
                         <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" /> Overdue

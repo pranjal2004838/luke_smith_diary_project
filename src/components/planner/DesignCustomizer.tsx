@@ -165,7 +165,11 @@ export default function DesignCustomizer({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-md z-50 bg-[#04101e]/95 backdrop-blur-2xl border-l border-cyan-400/25 text-sky-50 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end select-none">
+      <div
+        className="w-full max-w-md h-full border-l border-cyan-400/35 text-sky-50 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right"
+        style={{ backgroundColor: '#04101e' }}
+      >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-cyan-400/15">
@@ -454,6 +458,7 @@ export default function DesignCustomizer({
         >
           Done
         </button>
+      </div>
       </div>
     </div>
   );

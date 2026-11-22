@@ -57,16 +57,25 @@
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #04101e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a1f36;
+  background: #1e3a5f;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #f0a500;
+  background: #38bdf8;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Section fade-in on scroll */

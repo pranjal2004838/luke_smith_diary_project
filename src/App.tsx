@@ -26,9 +26,11 @@ function App() {
         search.includes('view=books')
       ) {
         setView('website');
+        document.title = 'Luke Cato — Author, Speaker & Founder';
       } else {
         // Default: Pure Standalone Personal Diary & Planner
         setView('planner');
+        document.title = 'My Planner — Luke Smith';
       }
     };
 

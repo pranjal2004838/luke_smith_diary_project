@@ -84,20 +84,20 @@ export default function TodayDashboard({
     'bg-[#07223d]/75 hover:bg-[#0b3157]/85 backdrop-blur-md border border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.22)] hover:shadow-[0_0_26px_rgba(34,211,238,0.38)] transition-all duration-200 active:scale-[0.98]';
 
   return (
-    <div className="max-w-xl mx-auto space-y-5 pt-1" style={{ color: colorTheme.primaryHex }}>
+    <div className="max-w-xl mx-auto space-y-4" style={{ color: colorTheme.primaryHex }}>
       {/* Top Row: My planner + Date & Time + Update Photo / Settings */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <div
-            className="text-sm font-medium tracking-wide opacity-85"
+            className="text-xs sm:text-sm font-medium tracking-wide opacity-85"
             style={{ color: colorTheme.subHex }}
           >
             My planner
           </div>
-          <h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight leading-tight mt-0.5">
+          <h1 className="font-sans text-2xl sm:text-[28px] font-bold tracking-tight leading-snug mt-0.5">
             {formattedDate}
           </h1>
-          <div className="font-sans text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
+          <div className="font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug">
             {formattedTime}
           </div>
         </div>
@@ -151,8 +151,8 @@ export default function TodayDashboard({
       </div>
 
       {/* Card 1: Today */}
-      <div className={`p-5 ${glassCardClass}`}>
-        <div className="flex items-center justify-between mb-3.5">
+      <div className={`p-4 sm:p-5 ${glassCardClass}`}>
+        <div className="flex items-center justify-between mb-3">
           <h2 className="font-sans text-lg font-bold tracking-tight">Today</h2>
           {tasks.length > 5 && (
             <button
@@ -165,12 +165,12 @@ export default function TodayDashboard({
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {visibleTodayTasks.map((task) => (
             <div
               key={task.id}
               onClick={() => onToggleTask(task.id)}
-              className="group flex items-center justify-between gap-3 py-1.5 px-2 -mx-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
+              className="group flex items-center justify-between gap-3 py-1 px-2 -mx-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {/* Rounded Square Checkbox matching reference screenshot */}
@@ -189,7 +189,7 @@ export default function TodayDashboard({
                 </button>
 
                 <span
-                  className={`text-[15px] font-medium truncate transition-opacity ${
+                  className={`text-sm sm:text-[15px] font-medium truncate transition-opacity ${
                     task.completed ? 'line-through opacity-45' : ''
                   }`}
                 >
@@ -213,8 +213,8 @@ export default function TodayDashboard({
       </div>
 
       {/* Card 2: Your progress (Mint Green, Amber, Lilac neon accents + View charts) */}
-      <div className={`p-5 ${glassCardClass}`}>
-        <div className="flex items-center justify-between mb-4">
+      <div className={`p-4 sm:p-5 ${glassCardClass}`}>
+        <div className="flex items-center justify-between mb-3">
           <h2 className="font-sans text-lg font-bold tracking-tight">Your progress</h2>
           <button
             type="button"
@@ -225,21 +225,21 @@ export default function TodayDashboard({
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 items-center">
+        <div className="flex flex-wrap sm:grid sm:grid-cols-3 gap-x-3 gap-y-2.5 items-center justify-between">
           {/* Mint Green: Completed */}
           <button
             type="button"
             onClick={onOpenViewCharts}
-            className="text-left group pr-2 border-r border-white/15"
+            className="text-left group sm:pr-2 sm:border-r sm:border-white/15"
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-emerald-200 truncate">
+              <span className="text-xs sm:text-sm font-semibold text-emerald-200 whitespace-nowrap">
                 {completedCount} of {totalCount} done
               </span>
             </div>
             {/* Segmented mint green pills */}
-            <div className="flex gap-1 mt-2">
+            <div className="flex gap-1 mt-1.5 min-w-[90px]">
               {Array.from({ length: Math.min(totalCount || 5, 5) }).map((_, idx) => {
                 const filled =
                   totalCount > 0 && idx < Math.round((completedCount / totalCount) * Math.min(totalCount, 5));
@@ -259,10 +259,10 @@ export default function TodayDashboard({
           <button
             type="button"
             onClick={onOpenViewCharts}
-            className="flex items-center justify-center gap-1.5 px-2 border-r border-white/15 text-left hover:opacity-90"
+            className="flex items-center sm:justify-center gap-1.5 sm:px-2 sm:border-r sm:border-white/15 text-left hover:opacity-90"
           >
             <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="text-xs sm:text-sm font-semibold text-amber-200 truncate">
+            <span className="text-xs sm:text-sm font-semibold text-amber-200 whitespace-nowrap">
               {overdueCount} overdue
             </span>
           </button>
@@ -271,10 +271,10 @@ export default function TodayDashboard({
           <button
             type="button"
             onClick={onOpenViewCharts}
-            className="flex items-center justify-end gap-1.5 pl-1 text-right hover:opacity-90"
+            className="flex items-center sm:justify-end gap-1.5 text-left sm:text-right hover:opacity-90"
           >
             <Smile className="w-4 h-4 text-purple-300 shrink-0" />
-            <span className="text-xs sm:text-sm font-semibold text-purple-200 truncate">
+            <span className="text-xs sm:text-sm font-semibold text-purple-200 whitespace-nowrap">
               Mindset: {latestMindset}
             </span>
           </button>
