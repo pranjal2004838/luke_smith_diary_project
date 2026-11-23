@@ -89,7 +89,6 @@ export const getCurrentWeekDates = (): Date[] => {
 const weekDates = getCurrentWeekDates();
 const monStr = formatDateStr(weekDates[0]);
 const tueStr = formatDateStr(weekDates[1]);
-const wedStr = formatDateStr(weekDates[2]);
 const thuStr = formatDateStr(weekDates[3]);
 const friStr = formatDateStr(weekDates[4]);
 const satStr = formatDateStr(weekDates[5]);
@@ -214,13 +213,13 @@ export const initialTasks: Task[] = [
     colorTone: 'lime',
     notes: 'Carried forward from yesterday. Penguin UK expects returned PDF.',
   },
-  // Completed tasks so progress reads naturally (e.g. 12 of 18 or high completion bar)
+  // Completed tasks from earlier so progress reads "12 of 16 tasks done" while keeping this week's grid clean
   {
     id: 't-7',
     title: 'Sign off on Question-Cards proof',
     project: 'Book 13: "The Courage to Ask"',
     priority: 'medium',
-    dueDate: wedStr,
+    dueDate: getLocalDateStr(-4),
     dueTime: '9:00 am',
     completed: true,
     colorTone: 'mint',
@@ -230,7 +229,7 @@ export const initialTasks: Task[] = [
     title: 'Morning reflection & priority check',
     project: 'Personal & Mindset',
     priority: 'low',
-    dueDate: wedStr,
+    dueDate: getLocalDateStr(-4),
     dueTime: '8:30 am',
     completed: true,
     colorTone: 'mint',
@@ -240,7 +239,7 @@ export const initialTasks: Task[] = [
     title: 'Approve studio lighting setup',
     project: 'Film & Media Production',
     priority: 'medium',
-    dueDate: wedStr,
+    dueDate: getLocalDateStr(-5),
     dueTime: '3:00 pm',
     completed: true,
     colorTone: 'teal',
@@ -250,7 +249,7 @@ export const initialTasks: Task[] = [
     title: 'Update keynote bio for organiser',
     project: 'Real Direction Academy',
     priority: 'low',
-    dueDate: wedStr,
+    dueDate: getLocalDateStr(-5),
     dueTime: '4:00 pm',
     completed: true,
     colorTone: 'mint',

@@ -14,12 +14,12 @@ import {
 import { DashboardSettings } from '../components/planner/DesignCustomizer';
 
 const STORAGE_KEYS = {
-  TASKS: 'luke_planner_tasks_v4',
-  APPOINTMENTS: 'luke_planner_appointments_v4',
-  DIARY: 'luke_planner_diary_v4',
-  PROJECTS: 'luke_planner_projects_v4',
-  MINDSET: 'luke_planner_mindset_v4',
-  SETTINGS: 'luke_planner_settings_v4',
+  TASKS: 'luke_planner_tasks_v5',
+  APPOINTMENTS: 'luke_planner_appointments_v5',
+  DIARY: 'luke_planner_diary_v5',
+  PROJECTS: 'luke_planner_projects_v5',
+  MINDSET: 'luke_planner_mindset_v5',
+  SETTINGS: 'luke_planner_settings_v5',
   AUTH: 'luke_planner_auth_user',
 };
 

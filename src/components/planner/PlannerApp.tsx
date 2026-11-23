@@ -144,16 +144,16 @@ export default function PlannerApp() {
     >
       {/* Top Navigation Bar (Matching Luke's Reference Screenshot) */}
       <header className="sticky top-0 z-40 bg-[#0d1017]/95 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3.5 flex items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-3 flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Left: Brand + Pill Track (Home | Calendar | Diary) */}
-          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
-            <span className="font-sans font-extrabold text-base sm:text-2xl tracking-tight text-white whitespace-nowrap">
+          <div className="flex items-center gap-2 sm:gap-5 min-w-0">
+            <span className="font-sans font-extrabold text-sm sm:text-2xl tracking-tight text-white whitespace-nowrap">
               My planner
             </span>
 
             <nav
               aria-label="Primary navigation"
-              className="flex items-center bg-[#141821] border border-white/10 rounded-full p-1"
+              className="flex items-center bg-[#141821] border border-white/10 rounded-full p-0.5 sm:p-1"
             >
               {[
                 { id: 'home', label: 'Home' },
@@ -164,12 +164,12 @@ export default function PlannerApp() {
                 return (
                   <div key={item.id} className="flex items-center">
                     {idx > 0 && !active && activeTab !== ['home', 'calendar', 'diary'][idx - 1] && (
-                      <span className="h-3.5 w-px bg-white/10 mx-0.5" />
+                      <span className="h-3 w-px bg-white/10 mx-0.5 hidden sm:block" />
                     )}
                     <button
                       type="button"
                       onClick={() => setActiveTab(item.id as typeof activeTab)}
-                      className={`px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                      className={`px-2 sm:px-4 py-1 rounded-full text-[11px] sm:text-sm font-semibold transition-all ${
                         active
                           ? 'bg-[#c8ef43] text-[#0b0f14] font-bold shadow-[0_0_12px_rgba(200,239,67,0.3)]'
                           : 'text-gray-300 hover:text-white'
@@ -184,11 +184,11 @@ export default function PlannerApp() {
           </div>
 
           {/* Right: Set Reminder button + Settings */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsAddTaskOpen(true)}
-              className="px-3 sm:px-4 py-1.5 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-xs font-medium text-gray-200 transition-colors"
+              className="px-2 sm:px-4 py-1.5 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-[11px] sm:text-xs font-medium text-gray-200 transition-colors whitespace-nowrap"
             >
               Set Reminder
             </button>
@@ -196,7 +196,7 @@ export default function PlannerApp() {
             <button
               type="button"
               onClick={() => setIsCustomizerOpen(true)}
-              className="p-2 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-gray-300 hover:text-white transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-gray-300 hover:text-white transition-colors"
               aria-label="Settings and appearance"
               title="Photo, text colour, private access & backup"
             >
