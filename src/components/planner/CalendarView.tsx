@@ -16,7 +16,6 @@ interface CalendarViewProps {
   tasks: Task[];
   projects: Project[];
   textColor?: TextColorOption;
-  isGlassTheme?: boolean;
   onToggleTask: (id: string) => void;
   onAddTask: (task: Omit<Task, 'id'>) => void;
   onMoveOverdueToToday: (id: string) => void;
@@ -26,8 +25,7 @@ export default function CalendarView({
   appointments,
   tasks,
   projects,
-  textColor = 'ice-blue',
-  isGlassTheme = true,
+  textColor = 'white',
   onToggleTask,
   onAddTask,
   onMoveOverdueToToday,
@@ -39,9 +37,8 @@ export default function CalendarView({
   const [selectedDay, setSelectedDay] = useState(now.getDate());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
 
-  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES['ice-blue'];
-
-  const cardBg = 'bg-[#111720]/90 border border-white/10 rounded-2xl';
+  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES.white;
+  const cardBg = 'bg-[#141821] border border-white/10 rounded-2xl';
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
@@ -100,68 +97,68 @@ export default function CalendarView({
 
   return (
     <div className="max-w-7xl mx-auto space-y-5" style={{ color: colorTheme.primaryHex }}>
-      {/* Section Header + Sub-switcher (Schedule vs Projects & Priorities) */}
-      <div className={`p-5 sm:p-6 ${cardBg}`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-sans text-2xl font-bold">Calendar, Projects & Priorities</h1>
-            <p className="text-xs mt-1" style={{ color: colorTheme.subHex }}>
-              View your monthly/weekly schedule or manage tasks grouped by project & priority.
-            </p>
+      {/* Section Header + Sub-switcher (Calendar vs Projects & Priorities) */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
+        <div>
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Calendar & Projects
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+            View your schedule or manage tasks grouped by project & priority.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Grouped Section Switcher */}
+          <div className="flex items-center rounded-full bg-[#141821] p-1 border border-white/10 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setSectionTab('schedule')}
+              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                sectionTab === 'schedule'
+                  ? 'bg-[#c8ef43] text-[#0b0f14] font-bold shadow-[0_0_12px_rgba(200,239,67,0.25)]'
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Calendar</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSectionTab('projects')}
+              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                sectionTab === 'projects'
+                  ? 'bg-[#c8ef43] text-[#0b0f14] font-bold shadow-[0_0_12px_rgba(200,239,67,0.25)]'
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <FolderKanban className="w-3.5 h-3.5" />
+              <span>Projects & Priorities</span>
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Grouped Section Switcher */}
-            <div className="flex items-center rounded-full bg-black/45 p-1 border border-white/10 text-xs font-semibold">
+          {sectionTab === 'schedule' && (
+            <div className="flex items-center rounded-xl bg-[#141821] p-1 border border-white/10 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => setSectionTab('schedule')}
-                className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
-                  sectionTab === 'schedule'
-                    ? 'bg-[#d4f854] text-[#0b0f14] font-bold'
-                    : 'text-gray-300 hover:text-white'
+                onClick={() => setViewMode('month')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  viewMode === 'month' ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <CalendarIcon className="w-3.5 h-3.5" />
-                <span>Calendar</span>
+                Month
               </button>
               <button
                 type="button"
-                onClick={() => setSectionTab('projects')}
-                className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
-                  sectionTab === 'projects'
-                    ? 'bg-[#d4f854] text-[#0b0f14] font-bold'
-                    : 'text-gray-300 hover:text-white'
+                onClick={() => setViewMode('week')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  viewMode === 'week' ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <FolderKanban className="w-3.5 h-3.5" />
-                <span>Projects & Priorities</span>
+                Week
               </button>
             </div>
-
-            {sectionTab === 'schedule' && (
-              <div className="flex items-center rounded-xl bg-black/40 p-1 border border-white/10 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('month')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
-                    viewMode === 'month' ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  Month
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('week')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
-                    viewMode === 'week' ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  Week
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -173,20 +170,19 @@ export default function CalendarView({
           onToggleTask={onToggleTask}
           onAddTask={onAddTask}
           onMoveOverdueToToday={onMoveOverdueToToday}
-          isGlassTheme={isGlassTheme}
         />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Calendar Grid */}
           <div className={`lg:col-span-2 p-5 sm:p-6 ${cardBg}`}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-sans font-bold text-lg">{monthLabel}</h2>
+              <h2 className="font-sans font-bold text-lg text-white">{monthLabel}</h2>
 
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handlePrevMonth}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200"
+                  className="p-2 rounded-lg bg-[#1a202c] hover:bg-[#222a38] border border-white/10 text-gray-200"
                   aria-label="Previous month"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -194,14 +190,14 @@ export default function CalendarView({
                 <button
                   type="button"
                   onClick={handleToday}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d4f854]/20 hover:bg-[#d4f854]/30 text-[#d4f854] border border-[#d4f854]/30"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c8ef43]/15 hover:bg-[#c8ef43]/25 text-[#c8ef43] border border-[#c8ef43]/30"
                 >
                   Today
                 </button>
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200"
+                  className="p-2 rounded-lg bg-[#1a202c] hover:bg-[#222a38] border border-white/10 text-gray-200"
                   aria-label="Next month"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -211,7 +207,7 @@ export default function CalendarView({
 
             {viewMode === 'month' ? (
               <>
-                <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider opacity-70 mb-2">
+                <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">
                   <span>Sun</span>
                   <span>Mon</span>
                   <span>Tue</span>
@@ -239,26 +235,26 @@ export default function CalendarView({
                         onClick={() => setSelectedDay(day)}
                         className={`min-h-[60px] p-2 rounded-xl text-left border flex flex-col justify-between transition-all ${
                           isSelected
-                            ? 'border-[#d4f854] bg-[#d4f854]/15'
+                            ? 'border-[#c8ef43] bg-[#c8ef43]/15'
                             : isToday
-                            ? 'border-[#86efac]/60 bg-[#86efac]/10'
-                            : 'bg-black/25 border-white/10 hover:border-white/25'
+                            ? 'border-[#9ee4c3]/60 bg-[#9ee4c3]/10'
+                            : 'bg-[#0d1017]/60 border-white/[0.07] hover:border-white/20'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span
                             className={`text-xs font-bold ${
-                              isToday ? 'text-[#86efac]' : isSelected ? 'text-[#d4f854]' : ''
+                              isToday ? 'text-[#9ee4c3]' : isSelected ? 'text-[#c8ef43]' : 'text-gray-200'
                             }`}
                           >
                             {day}
                           </span>
-                          {isToday && <span className="w-1.5 h-1.5 rounded-full bg-[#86efac]" />}
+                          {isToday && <span className="w-1.5 h-1.5 rounded-full bg-[#9ee4c3]" />}
                         </div>
 
                         <div className="space-y-1 mt-1">
-                          {hasApp && <div className="h-1.5 rounded-full bg-[#67e8f9] w-full opacity-90" />}
-                          {hasDue && <div className="h-1.5 rounded-full bg-[#d4f854] w-3/4 opacity-90" />}
+                          {hasApp && <div className="h-1.5 rounded-full bg-[#63d8d8] w-full opacity-90" />}
+                          {hasDue && <div className="h-1.5 rounded-full bg-[#c8ef43] w-3/4 opacity-90" />}
                         </div>
                       </button>
                     );
@@ -282,15 +278,15 @@ export default function CalendarView({
                       }}
                       className={`p-3 rounded-xl border text-center flex flex-col items-center gap-2 transition-all ${
                         isSelected
-                          ? 'border-[#d4f854] bg-[#d4f854]/15'
-                          : 'bg-black/25 border-white/10 hover:border-white/25'
+                          ? 'border-[#c8ef43] bg-[#c8ef43]/15'
+                          : 'bg-[#0d1017]/60 border-white/10 hover:border-white/25'
                       }`}
                     >
-                      <span className="text-[11px] uppercase opacity-75">{wd.label}</span>
-                      <span className="text-base font-bold">{wd.dayNum}</span>
+                      <span className="text-[11px] uppercase text-gray-400">{wd.label}</span>
+                      <span className="text-base font-bold text-white">{wd.dayNum}</span>
                       <div className="flex gap-1">
-                        {hasApp && <span className="w-2 h-2 rounded-full bg-[#67e8f9]" />}
-                        {hasDue && <span className="w-2 h-2 rounded-full bg-[#d4f854]" />}
+                        {hasApp && <span className="w-2 h-2 rounded-full bg-[#63d8d8]" />}
+                        {hasDue && <span className="w-2 h-2 rounded-full bg-[#c8ef43]" />}
                       </div>
                     </button>
                   );
@@ -298,15 +294,15 @@ export default function CalendarView({
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-4 mt-5 pt-4 border-t border-white/10 text-xs opacity-80">
+            <div className="flex flex-wrap items-center gap-4 mt-5 pt-4 border-t border-white/10 text-xs text-gray-400">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#67e8f9]" /> Appointment
+                <span className="w-2.5 h-2.5 rounded-full bg-[#63d8d8]" /> Appointment
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#d4f854]" /> Task Deadline
+                <span className="w-2.5 h-2.5 rounded-full bg-[#c8ef43]" /> Task Deadline
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#86efac]" /> Today
+                <span className="w-2.5 h-2.5 rounded-full bg-[#9ee4c3]" /> Today
               </span>
             </div>
           </div>
@@ -315,44 +311,45 @@ export default function CalendarView({
           <div className="space-y-5">
             <div className={`p-5 ${cardBg}`}>
               <div className="flex items-center justify-between mb-3.5">
-                <h3 className="font-sans font-bold text-base">
+                <h3 className="font-sans font-bold text-base text-white">
                   {new Date(viewYear, viewMonth, selectedDay).toLocaleDateString('en-GB', {
                     day: 'numeric',
                     month: 'short',
-                  })} Agenda
+                  })}{' '}
+                  Agenda
                 </h3>
-                <span className="text-xs text-[#d4f854] font-mono">
+                <span className="text-xs text-[#c8ef43] font-mono">
                   {dayAppointments.length + dayTasks.length} items
                 </span>
               </div>
 
               {dayAppointments.length === 0 && dayTasks.length === 0 ? (
-                <p className="text-xs opacity-65 py-6 text-center italic">
+                <p className="text-xs text-gray-400 py-6 text-center italic">
                   Nothing scheduled for this day.
                 </p>
               ) : (
                 <div className="space-y-2.5">
                   {dayAppointments.map((app) => (
-                    <div key={app.id} className="p-3 rounded-xl bg-[#1a222d] border border-cyan-400/30">
-                      <div className="flex items-center justify-between text-xs text-[#67e8f9] font-semibold">
+                    <div key={app.id} className="p-3 rounded-xl bg-[#1a202c] border border-[#63d8d8]/30">
+                      <div className="flex items-center justify-between text-xs text-[#63d8d8] font-semibold">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" /> {app.time}
                         </span>
                         <span className="text-[10px] uppercase">{app.type}</span>
                       </div>
-                      <div className="font-bold text-sm mt-1">{app.title}</div>
-                      <div className="text-xs opacity-75 mt-0.5">{app.location}</div>
+                      <div className="font-bold text-sm text-white mt-1">{app.title}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{app.location}</div>
                     </div>
                   ))}
 
                   {dayTasks.map((t) => (
-                    <div key={t.id} className="p-3 rounded-xl bg-[#1a222d] border border-white/15">
-                      <div className="flex items-center justify-between text-xs text-[#d4f854] font-semibold">
+                    <div key={t.id} className="p-3 rounded-xl bg-[#1a202c] border border-white/10">
+                      <div className="flex items-center justify-between text-xs text-[#c8ef43] font-semibold">
                         <span>{t.isOverdue ? 'Overdue' : 'Task Due'}</span>
                         <span className="text-[10px] uppercase font-bold">{t.dueTime || t.priority}</span>
                       </div>
-                      <div className="font-medium text-sm mt-1">{t.title}</div>
-                      <div className="text-xs opacity-70 mt-0.5">{t.project}</div>
+                      <div className="font-medium text-sm text-white mt-1">{t.title}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{t.project}</div>
                     </div>
                   ))}
                 </div>
@@ -360,11 +357,11 @@ export default function CalendarView({
             </div>
 
             <div className={`p-5 ${cardBg}`}>
-              <div className="flex items-center gap-2 mb-2 text-[#67e8f9] font-bold text-xs uppercase tracking-wider">
+              <div className="flex items-center gap-2 mb-2 text-[#63d8d8] font-bold text-xs uppercase tracking-wider">
                 <Smartphone className="w-4 h-4" />
                 <span>iPhone & Watch Reminders</span>
               </div>
-              <p className="text-xs opacity-85 leading-relaxed">
+              <p className="text-xs text-gray-300 leading-relaxed">
                 Add this app to your iPhone Home Screen via Safari Share → <strong>Add to Home Screen</strong>. Web Push notifications reach your phone and mirror to your Apple Watch even when closed.
               </p>
             </div>

@@ -47,8 +47,7 @@ export default function PlannerApp() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [showPwaPrompt, setShowPwaPrompt] = useState(false);
 
-  const isGlassTheme = settings.mockupMode === 'background';
-  const colorTheme = TEXT_COLOR_THEMES[settings.textColor] || TEXT_COLOR_THEMES['ice-blue'];
+  const colorTheme = TEXT_COLOR_THEMES[settings.textColor] || TEXT_COLOR_THEMES.white;
 
   useEffect(() => {
     plannerService.saveTasks(tasks);
@@ -250,7 +249,6 @@ export default function PlannerApp() {
             tasks={tasks}
             projects={projects}
             textColor={settings.textColor}
-            isGlassTheme={isGlassTheme}
             onToggleTask={handleToggleTask}
             onAddTask={handleAddTask}
             onMoveOverdueToToday={handleMoveOverdueToToday}
@@ -264,7 +262,6 @@ export default function PlannerApp() {
             onAddEntry={handleAddDiaryEntry}
             onLogMindset={handleLogMindset}
             onExtractTasksFromNote={handleExtractTasksFromNote}
-            isGlassTheme={isGlassTheme}
           />
         )}
       </main>
@@ -307,7 +304,6 @@ export default function PlannerApp() {
           projects={projects}
           onAddTasks={handleAddMultipleTasks}
           onClose={() => setIsAiExtractorOpen(false)}
-          isGlassTheme={isGlassTheme}
         />
       )}
 
@@ -330,7 +326,6 @@ export default function PlannerApp() {
           onLogin={handleLogin}
           onLogout={handleLogout}
           onClose={() => setIsAuthOpen(false)}
-          isGlassTheme={isGlassTheme}
         />
       )}
 
@@ -338,7 +333,6 @@ export default function PlannerApp() {
       {isExportOpen && (
         <ExportModal
           onClose={() => setIsExportOpen(false)}
-          isGlassTheme={isGlassTheme}
         />
       )}
     </div>

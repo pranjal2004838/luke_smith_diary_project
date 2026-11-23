@@ -26,10 +26,15 @@ interface DiaryQuickCaptureProps {
   onAddEntry: (entry: Omit<DiaryEntry, 'id'>) => void;
   onLogMindset?: (mindset: MindsetType, note?: string) => void;
   onExtractTasksFromNote: (text: string) => void;
-  isGlassTheme?: boolean;
 }
 
-const MINDSET_OPTIONS: MindsetType[] = ['Calm', 'Focused', 'Energized', 'Reflective', 'Stretched'];
+const MOOD_OPTIONS: { mood: MindsetType; emoji: string }[] = [
+  { mood: 'Calm', emoji: '😊' },
+  { mood: 'Good', emoji: '🙂' },
+  { mood: 'Okay', emoji: '😐' },
+  { mood: 'Low', emoji: '😔' },
+  { mood: 'Overwhelmed', emoji: '😣' },
+];
 
 interface SpeechRecognitionEventLike {
   results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -47,16 +52,14 @@ interface SpeechRecognitionLike {
 
 export default function DiaryQuickCapture({
   entries,
-  textColor = 'ice-blue',
+  textColor = 'white',
   onAddEntry,
   onLogMindset,
   onExtractTasksFromNote,
-  isGlassTheme = true,
 }: DiaryQuickCaptureProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
-  // Real Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -66,11 +69,9 @@ export default function DiaryQuickCapture({
   const timerRef = useRef<number | null>(null);
   const secondsRef = useRef(0);
   
-  // Live Audio Playback State
   const [playingEntryId, setPlayingEntryId] = useState<string | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Form state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [entryType, setEntryType] = useState<'note' | 'voice' | 'idea'>('note');
   const [title, setTitle] = useState('');
@@ -99,13 +100,9 @@ export default function DiaryQuickCapture({
     };
   }, []);
 
-  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES['ice-blue'];
-
-  const cardBg = isGlassTheme
-    ? 'bg-[#06182c]/72 backdrop-blur-xl border border-cyan-400/30 shadow-[0_0_24px_rgba(34,211,238,0.12)] rounded-2xl'
-    : 'bg-[#0a1628] border border-cyan-400/20 shadow-lg rounded-2xl';
-
-  const inputBg = 'bg-black/40 border-cyan-400/25 text-white placeholder-sky-300/40';
+  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES.white;
+  const cardBg = 'bg-[#141821] border border-white/10 rounded-2xl';
+  const inputBg = 'bg-[#0d1017] border-white/15 text-white placeholder-gray-500';
 
   const startRealRecording = async () => {
     setMediaError(null);
@@ -113,7 +110,6 @@ export default function DiaryQuickCapture({
     secondsRef.current = 0;
     setRecordingSeconds(0);
 
-    // Live Speech-to-Text transcription if browser supports it
     const win = window as unknown as {
       SpeechRecognition?: new () => SpeechRecognitionLike;
       webkitSpeechRecognition?: new () => SpeechRecognitionLike;
@@ -306,112 +302,127 @@ export default function DiaryQuickCapture({
   });
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5" style={{ color: colorTheme.primaryHex }}>
-      {/* Header & Quick Action Bar */}
-      <div className={`p-5 sm:p-6 ${cardBg}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-sans text-2xl font-bold">Diary & Voice Notes</h1>
-            <p className="text-xs mt-1" style={{ color: colorTheme.subHex }}>
-              Save thoughts, record audio with transcription, and log your daily mindset.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                setIsFormOpen(true);
-                setEntryType('voice');
-              }}
-              className="px-3.5 py-2.5 rounded-xl bg-[#07223d]/80 hover:bg-[#0b3157] border border-cyan-400/50 text-cyan-200 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-[0_0_16px_rgba(34,211,238,0.18)]"
-            >
-              <Mic className="w-4 h-4 text-cyan-300" />
-              <span>Voice Note</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsFormOpen(true);
-                setEntryType('note');
-              }}
-              className="px-3.5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Write Note</span>
-            </button>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-5" style={{ color: colorTheme.primaryHex }}>
+      {/* Header & Quick Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+        <div>
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Diary & Voice Notes
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+            Capture thoughts, voice notes with transcription, and pull out AI tasks to review.
+          </p>
         </div>
 
-        {/* Search & Tag Filter Bar */}
-        <div className="mt-5 flex flex-col gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 text-cyan-300/70 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search written notes or voice transcripts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-10 pr-9 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-cyan-300 ${inputBg}`}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sky-300 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setIsFormOpen(true);
+              setEntryType('voice');
+            }}
+            className="px-4 py-2 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs flex items-center gap-1.5 shadow-[0_0_16px_rgba(200,239,67,0.25)] transition-all"
+          >
+            <Mic className="w-3.5 h-3.5" />
+            <span>Record Voice Note</span>
+          </button>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsFormOpen(true);
+              setEntryType('note');
+            }}
+            className="px-4 py-2 rounded-full bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-gray-200 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Write Note</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              onExtractTasksFromNote(
+                entries[0]?.transcript ||
+                  entries[0]?.content ||
+                  'Follow up with the editor on Friday and prepare three questions for the production meeting.'
+              )
+            }
+            className="px-4 py-2 rounded-full bg-[#141821] hover:bg-[#1c222e] border border-[#63d8d8]/35 text-[#63d8d8] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Task Review</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Search & Tag Filter Bar */}
+      <div className={`p-4 sm:p-5 ${cardBg} space-y-3`}>
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search written notes or voice transcripts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`w-full pl-10 pr-9 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-[#c8ef43] ${inputBg}`}
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={() => setSelectedTag(null)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedTag === null
-                  ? 'bg-cyan-400 text-[#04101e] font-bold'
-                  : 'bg-white/10 text-sky-200 hover:bg-white/15'
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedTag(null)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              selectedTag === null
+                ? 'bg-[#c8ef43] text-[#0b0f14] font-bold'
+                : 'bg-[#1a202c] text-gray-300 hover:text-white'
+            }`}
+          >
+            All ({entries.length})
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                selectedTag === tag
+                  ? 'bg-[#c8ef43] text-[#0b0f14] font-bold'
+                  : 'bg-[#1a202c] text-gray-300 hover:text-white'
               }`}
             >
-              All ({entries.length})
+              #{tag}
             </button>
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                  selectedTag === tag
-                    ? 'bg-cyan-400 text-[#04101e] font-bold'
-                    : 'bg-white/10 text-sky-200 hover:bg-white/15'
-                }`}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Creation Form */}
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className={`p-5 sm:p-6 border border-cyan-400/50 ${cardBg} animate-fade-in`}>
+        <form onSubmit={handleSubmit} className={`p-5 sm:p-6 border-[#c8ef43]/40 ${cardBg} animate-fade-in`}>
           <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
             <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300">
+              <span className="p-2 rounded-xl bg-[#c8ef43]/15 text-[#c8ef43]">
                 {entryType === 'voice' ? <Mic className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
               </span>
-              <h3 className="font-sans font-bold text-base">
+              <h3 className="font-sans font-bold text-base text-white">
                 {entryType === 'voice' ? 'Record Voice Note & Transcript' : 'New Diary Entry'}
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="text-sky-300 hover:text-white"
+              className="text-gray-400 hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
@@ -419,7 +430,7 @@ export default function DiaryQuickCapture({
 
           <div className="space-y-4">
             {/* Voice Recording Box */}
-            <div className={`p-4 rounded-xl border ${isRecording ? 'border-rose-400 bg-rose-500/15' : 'border-cyan-400/25 bg-black/25'}`}>
+            <div className={`p-4 rounded-xl border ${isRecording ? 'border-rose-400 bg-rose-500/10' : 'border-white/10 bg-[#0d1017]'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
@@ -428,16 +439,16 @@ export default function DiaryQuickCapture({
                     className={`w-11 h-11 rounded-full flex items-center justify-center transition-all shrink-0 ${
                       isRecording
                         ? 'bg-rose-500 text-white animate-pulse'
-                        : 'bg-cyan-400 hover:bg-cyan-300 text-[#04101e]'
+                        : 'bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14]'
                     }`}
                   >
                     {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   </button>
                   <div>
-                    <div className="text-sm font-semibold">
+                    <div className="text-sm font-semibold text-white">
                       {isRecording ? 'Listening... tap to stop' : 'Tap to Record Voice Note'}
                     </div>
-                    <div className="text-xs text-sky-300/75">
+                    <div className="text-xs text-gray-400">
                       Captures audio playback + editable text transcription
                     </div>
                   </div>
@@ -458,14 +469,14 @@ export default function DiaryQuickCapture({
               )}
 
               {recordedVoiceData && !isRecording && (
-                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-emerald-300">
+                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-[#9ee4c3]">
                   <span className="flex items-center gap-1.5 font-semibold">
                     <Check className="w-4 h-4" /> Audio & Transcript Ready ({recordedVoiceData.duration})
                   </span>
                   <button
                     type="button"
                     onClick={() => handleTogglePlayAudio('draft', recordedVoiceData.audioUrl)}
-                    className="px-2.5 py-1 rounded-lg bg-cyan-400/20 text-cyan-200 font-semibold flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-[#c8ef43]/15 text-[#c8ef43] font-semibold flex items-center gap-1"
                   >
                     {playingEntryId === 'draft' ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                     <span>Test Playback</span>
@@ -479,7 +490,7 @@ export default function DiaryQuickCapture({
               placeholder="Title / Heading..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-cyan-300 ${inputBg}`}
+              className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-[#c8ef43] ${inputBg}`}
             />
 
             <textarea
@@ -487,27 +498,28 @@ export default function DiaryQuickCapture({
               placeholder="Write your thoughts or edit voice transcript..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:border-cyan-300 ${inputBg}`}
+              className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:border-[#c8ef43] ${inputBg}`}
             />
 
-            {/* Mindset Check-In (Lilac) */}
+            {/* Mood Check-In */}
             <div>
-              <label className="block text-xs font-semibold text-purple-300 mb-1.5">
-                Mindset Check-in
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Mood check-in
               </label>
               <div className="flex flex-wrap gap-2">
-                {MINDSET_OPTIONS.map((m) => (
+                {MOOD_OPTIONS.map((item) => (
                   <button
-                    key={m}
+                    key={item.mood}
                     type="button"
-                    onClick={() => setMindset(m)}
-                    className={`px-3 py-1 rounded-xl text-xs font-semibold border transition-all ${
-                      mindset === m
-                        ? 'bg-purple-400 text-[#04101e] border-purple-300 font-bold'
-                        : 'bg-purple-500/10 text-purple-200 border-purple-400/30'
+                    onClick={() => setMindset(item.mood)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                      mindset === item.mood
+                        ? 'bg-[#c8ef43]/15 text-[#c8ef43] border-[#c8ef43]/50 font-bold'
+                        : 'bg-[#1a202c] text-gray-300 border-white/10 hover:text-white'
                     }`}
                   >
-                    {m}
+                    <span>{item.emoji}</span>
+                    <span>{item.mood}</span>
                   </button>
                 ))}
               </div>
@@ -544,9 +556,9 @@ export default function DiaryQuickCapture({
                   if (content) onExtractTasksFromNote(content);
                 }}
                 disabled={!content}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-cyan-200 flex items-center gap-1.5 disabled:opacity-40"
+                className="px-3.5 py-2 rounded-full text-xs font-semibold bg-[#1a202c] hover:bg-[#222a38] border border-[#63d8d8]/35 text-[#63d8d8] flex items-center gap-1.5 disabled:opacity-40"
               >
-                <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Pull Out Tasks (AI)</span>
               </button>
 
@@ -554,13 +566,13 @@ export default function DiaryQuickCapture({
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-sky-300 hover:text-white"
+                  className="px-3.5 py-2 rounded-full text-xs font-semibold text-gray-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider"
+                  className="px-5 py-2 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider"
                 >
                   Save Entry
                 </button>
@@ -574,7 +586,7 @@ export default function DiaryQuickCapture({
       <div className="space-y-4">
         {filteredEntries.length === 0 ? (
           <div className={`p-10 text-center ${cardBg}`}>
-            <p className="text-sm text-sky-300/70">No diary entries match your search.</p>
+            <p className="text-sm text-gray-400">No diary entries match your search.</p>
           </div>
         ) : (
           filteredEntries.map((entry) => (
@@ -584,15 +596,15 @@ export default function DiaryQuickCapture({
                   <span
                     className={`p-2 rounded-xl mt-0.5 ${
                       entry.type === 'voice'
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
-                        : 'bg-white/10 text-sky-200 border border-white/15'
+                        ? 'bg-[#c8ef43]/15 text-[#c8ef43] border border-[#c8ef43]/30'
+                        : 'bg-[#1a202c] text-gray-300 border border-white/10'
                     }`}
                   >
                     {entry.type === 'voice' ? <Mic className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                   </span>
                   <div>
-                    <h3 className="font-sans font-bold text-base">{entry.title}</h3>
-                    <div className="flex flex-wrap items-center gap-2 text-xs mt-0.5" style={{ color: colorTheme.subHex }}>
+                    <h3 className="font-sans font-bold text-base text-white">{entry.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mt-0.5">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" /> {entry.date}
                       </span>
@@ -603,8 +615,8 @@ export default function DiaryQuickCapture({
                       {entry.mindset && (
                         <>
                           <span>•</span>
-                          <span className="px-2 py-0.5 rounded-md bg-purple-400/20 text-purple-200 font-semibold text-[11px]">
-                            Mindset: {entry.mindset}
+                          <span className="px-2 py-0.5 rounded-full bg-[#d8b4fe]/15 text-[#d8b4fe] font-semibold text-[11px]">
+                            Mood: {entry.mindset}
                           </span>
                         </>
                       )}
@@ -615,20 +627,20 @@ export default function DiaryQuickCapture({
                 <button
                   type="button"
                   onClick={() => onExtractTasksFromNote(entry.transcript || entry.content)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 border border-cyan-400/35 transition-all self-start shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1a202c] hover:bg-[#222a38] text-[#63d8d8] border border-[#63d8d8]/30 transition-all self-start shrink-0"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   <span>Pull Out Tasks</span>
                 </button>
               </div>
 
               {entry.type === 'voice' && entry.audioDuration && (
-                <div className="my-3.5 p-3 rounded-xl bg-black/35 border border-cyan-400/20 flex items-center justify-between gap-4">
+                <div className="my-3.5 p-3 rounded-xl bg-[#0d1017] border border-white/10 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => handleTogglePlayAudio(entry.id, entry.audioUrl)}
-                      className="w-9 h-9 rounded-full bg-cyan-400 text-[#04101e] flex items-center justify-center font-bold hover:scale-105 transition-transform shrink-0"
+                      className="w-9 h-9 rounded-full bg-[#c8ef43] text-[#0b0f14] flex items-center justify-center font-bold hover:scale-105 transition-transform shrink-0"
                     >
                       {playingEntryId === entry.id ? (
                         <Pause className="w-4 h-4" />
@@ -637,17 +649,17 @@ export default function DiaryQuickCapture({
                       )}
                     </button>
                     <div>
-                      <div className="text-xs font-semibold flex items-center gap-2">
-                        <Volume2 className="w-3.5 h-3.5 text-cyan-300" />
+                      <div className="text-xs font-semibold text-white flex items-center gap-2">
+                        <Volume2 className="w-3.5 h-3.5 text-[#c8ef43]" />
                         <span>Voice Playback</span>
-                        <span className="text-[11px] font-mono opacity-75">({entry.audioDuration})</span>
+                        <span className="text-[11px] font-mono text-gray-400">({entry.audioDuration})</span>
                       </div>
                       <div className="flex items-center gap-1 mt-1">
                         {[40, 70, 90, 50, 80, 100, 60, 30, 85, 95, 45, 60, 75, 40, 80, 65].map((h, i) => (
                           <span
                             key={i}
                             className={`w-1 rounded-full transition-all duration-200 ${
-                              playingEntryId === entry.id ? 'bg-cyan-300 animate-pulse' : 'bg-white/30'
+                              playingEntryId === entry.id ? 'bg-[#c8ef43] animate-pulse' : 'bg-white/25'
                             }`}
                             style={{ height: `${Math.max(5, h / 4)}px` }}
                           />
@@ -655,13 +667,13 @@ export default function DiaryQuickCapture({
                       </div>
                     </div>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-sky-200 font-mono hidden sm:inline">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 font-mono hidden sm:inline">
                     Audio + Text
                   </span>
                 </div>
               )}
 
-              <p className="text-sm leading-relaxed whitespace-pre-wrap opacity-90">{entry.content}</p>
+              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{entry.content}</p>
 
               {entry.attachments && entry.attachments.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-2">
@@ -671,12 +683,12 @@ export default function DiaryQuickCapture({
                       href={att.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs bg-white/10 hover:bg-white/15 border border-white/15 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs bg-[#1a202c] hover:bg-[#222a38] border border-white/10 text-gray-200 transition-colors"
                     >
                       {att.type === 'link' ? (
-                        <LinkIcon className="w-3.5 h-3.5 text-cyan-300" />
+                        <LinkIcon className="w-3.5 h-3.5 text-[#63d8d8]" />
                       ) : (
-                        <ImageIcon className="w-3.5 h-3.5 text-emerald-300" />
+                        <ImageIcon className="w-3.5 h-3.5 text-[#9ee4c3]" />
                       )}
                       <span>{att.label}</span>
                     </a>
@@ -688,7 +700,7 @@ export default function DiaryQuickCapture({
                 {entry.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-[11px] px-2 py-0.5 rounded-md bg-white/10 text-sky-200 font-mono"
+                    className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.06] text-gray-400 font-mono"
                   >
                     #{tag}
                   </span>

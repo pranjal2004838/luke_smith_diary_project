@@ -17,17 +17,15 @@ interface TasksProjectsProps {
   onToggleTask: (id: string) => void;
   onAddTask: (task: Omit<Task, 'id'>) => void;
   onMoveOverdueToToday?: (id: string) => void;
-  isGlassTheme?: boolean;
 }
 
 export default function TasksProjects({
   tasks,
   projects,
-  textColor = 'ice-blue',
+  textColor = 'white',
   onToggleTask,
   onAddTask,
   onMoveOverdueToToday,
-  isGlassTheme = true,
 }: TasksProjectsProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'overdue' | 'carried'>('all');
@@ -40,13 +38,9 @@ export default function TasksProjects({
   const [newDueDate, setNewDueDate] = useState(TODAY_STR);
   const [newDueTime, setNewDueTime] = useState('11:00 am');
 
-  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES['ice-blue'];
-
-  const cardBg = isGlassTheme
-    ? 'bg-[#06182c]/72 backdrop-blur-xl border border-cyan-400/30 shadow-[0_0_24px_rgba(34,211,238,0.12)] rounded-2xl'
-    : 'bg-[#0a1628] border border-cyan-400/20 shadow-lg rounded-2xl';
-
-  const inputBg = 'bg-black/40 border-cyan-400/25 text-white';
+  const colorTheme = TEXT_COLOR_THEMES[textColor] || TEXT_COLOR_THEMES.white;
+  const cardBg = 'bg-[#141821] border border-white/10 rounded-2xl';
+  const inputBg = 'bg-[#0d1017] border-white/15 text-white placeholder-gray-500';
 
   const filteredTasks = tasks.filter((t) => {
     const matchesProject =
@@ -82,24 +76,24 @@ export default function TasksProjects({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5" style={{ color: colorTheme.primaryHex }}>
-      {/* Header & Projects */}
+    <div className="space-y-5" style={{ color: colorTheme.primaryHex }}>
+      {/* Projects Overview */}
       <div className={`p-5 sm:p-6 ${cardBg}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
           <div>
-            <h1 className="font-sans text-2xl font-bold">Projects & Tasks</h1>
-            <p className="text-xs mt-1" style={{ color: colorTheme.subHex }}>
-              Group tasks by project, track milestones, and manage overdue items.
+            <h2 className="font-sans text-xl font-bold text-white">Projects & Priorities</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Filter by project, priority level, or carried-forward status.
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsNewTaskOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 self-start sm:self-auto"
+            className="px-4 py-2 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs flex items-center gap-1.5 self-start sm:self-auto shadow-sm"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Task</span>
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Add task</span>
           </button>
         </div>
 
@@ -110,15 +104,15 @@ export default function TasksProjects({
             onClick={() => setSelectedProjectId('all')}
             className={`p-3.5 rounded-xl border text-left transition-all ${
               selectedProjectId === 'all'
-                ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                : 'bg-black/25 border-white/10 hover:border-white/25'
+                ? 'border-[#c8ef43] bg-[#c8ef43]/15'
+                : 'bg-[#0d1017]/70 border-white/10 hover:border-white/25'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <Layers className="w-4 h-4 text-cyan-300" />
-              <span className="text-xs font-mono opacity-75">{tasks.length}</span>
+              <Layers className="w-4 h-4 text-[#c8ef43]" />
+              <span className="text-xs font-mono text-gray-400">{tasks.length}</span>
             </div>
-            <div className="font-bold text-sm">All Projects</div>
+            <div className="font-bold text-sm text-white">All Projects</div>
           </button>
 
           {projects.map((proj) => {
@@ -130,8 +124,8 @@ export default function TasksProjects({
                 onClick={() => setSelectedProjectId(proj.id)}
                 className={`p-3.5 rounded-xl border text-left transition-all ${
                   isSelected
-                    ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                    : 'bg-black/25 border-white/10 hover:border-white/25'
+                    ? 'border-[#c8ef43] bg-[#c8ef43]/15'
+                    : 'bg-[#0d1017]/70 border-white/10 hover:border-white/25'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -139,10 +133,10 @@ export default function TasksProjects({
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: proj.color }}
                   />
-                  <span className="text-[11px] font-mono opacity-75">{proj.progress}%</span>
+                  <span className="text-[11px] font-mono text-gray-400">{proj.progress}%</span>
                 </div>
-                <div className="font-bold text-xs truncate">{proj.name}</div>
-                <div className="text-[10px] opacity-70 truncate mt-1">{proj.currentMilestone}</div>
+                <div className="font-bold text-xs text-white truncate">{proj.name}</div>
+                <div className="text-[10px] text-gray-400 truncate mt-1">{proj.currentMilestone}</div>
               </button>
             );
           })}
@@ -151,13 +145,13 @@ export default function TasksProjects({
 
       {/* Inline New Task Form */}
       {isNewTaskOpen && (
-        <form onSubmit={handleCreateTask} className={`p-5 border border-cyan-400/50 ${cardBg} animate-fade-in`}>
+        <form onSubmit={handleCreateTask} className={`p-5 border-[#c8ef43]/40 ${cardBg} animate-fade-in`}>
           <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-            <h3 className="font-sans font-bold text-base">New Project Task</h3>
+            <h3 className="font-sans font-bold text-base text-white">New Project Task</h3>
             <button
               type="button"
               onClick={() => setIsNewTaskOpen(false)}
-              className="text-sky-300 hover:text-white text-xs font-semibold"
+              className="text-gray-400 hover:text-white text-xs font-semibold"
             >
               Close
             </button>
@@ -169,7 +163,7 @@ export default function TasksProjects({
               placeholder="What needs to get done?"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-cyan-300 ${inputBg}`}
+              className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:border-[#c8ef43] ${inputBg}`}
               autoFocus
             />
 
@@ -180,7 +174,7 @@ export default function TasksProjects({
                 className={`px-3 py-2 rounded-xl text-xs border focus:outline-none sm:col-span-2 ${inputBg}`}
               >
                 {projects.map((p) => (
-                  <option key={p.id} value={p.name} className="bg-[#041222] text-white">
+                  <option key={p.id} value={p.name} className="bg-[#141821] text-white">
                     {p.name}
                   </option>
                 ))}
@@ -191,10 +185,10 @@ export default function TasksProjects({
                 onChange={(e) => setNewPriority(e.target.value as Task['priority'])}
                 className={`px-3 py-2 rounded-xl text-xs border focus:outline-none ${inputBg}`}
               >
-                <option value="urgent" className="bg-[#041222] text-white">Urgent</option>
-                <option value="high" className="bg-[#041222] text-white">High</option>
-                <option value="medium" className="bg-[#041222] text-white">Medium</option>
-                <option value="low" className="bg-[#041222] text-white">Low</option>
+                <option value="urgent" className="bg-[#141821] text-white">Urgent</option>
+                <option value="high" className="bg-[#141821] text-white">High</option>
+                <option value="medium" className="bg-[#141821] text-white">Medium</option>
+                <option value="low" className="bg-[#141821] text-white">Low</option>
               </select>
 
               <input
@@ -217,13 +211,13 @@ export default function TasksProjects({
                 <button
                   type="button"
                   onClick={() => setIsNewTaskOpen(false)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-sky-300"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider"
+                  className="px-4 py-2 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider"
                 >
                   Save Task
                 </button>
@@ -248,10 +242,10 @@ export default function TasksProjects({
                 type="button"
                 key={tab.id}
                 onClick={() => setFilterStatus(tab.id as typeof filterStatus)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
                   filterStatus === tab.id
-                    ? 'bg-cyan-400 text-[#04101e] font-bold'
-                    : 'bg-white/10 text-sky-200 hover:bg-white/15'
+                    ? 'bg-[#c8ef43] text-[#0b0f14] font-bold'
+                    : 'bg-[#1a202c] text-gray-300 hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -263,19 +257,19 @@ export default function TasksProjects({
             aria-label="Filter by priority"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as 'all' | Task['priority'])}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-black/40 border border-cyan-400/25 text-sky-100 focus:outline-none focus:border-cyan-300"
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#0d1017] border border-white/15 text-gray-200 focus:outline-none focus:border-[#c8ef43]"
           >
-            <option value="all" className="bg-[#041222]">All Priorities</option>
-            <option value="urgent" className="bg-[#041222]">Urgent</option>
-            <option value="high" className="bg-[#041222]">High</option>
-            <option value="medium" className="bg-[#041222]">Medium</option>
-            <option value="low" className="bg-[#041222]">Low</option>
+            <option value="all" className="bg-[#141821]">All Priorities</option>
+            <option value="urgent" className="bg-[#141821]">Urgent</option>
+            <option value="high" className="bg-[#141821]">High</option>
+            <option value="medium" className="bg-[#141821]">Medium</option>
+            <option value="low" className="bg-[#141821]">Low</option>
           </select>
         </div>
 
         <div className="space-y-2.5">
           {filteredTasks.length === 0 ? (
-            <div className="p-8 text-center opacity-60 text-xs">No tasks in this view.</div>
+            <div className="p-8 text-center text-gray-400 text-xs">No tasks in this view.</div>
           ) : (
             filteredTasks.map((t) => (
               <div
@@ -283,18 +277,18 @@ export default function TasksProjects({
                 onClick={() => onToggleTask(t.id)}
                 className={`p-3.5 rounded-xl border flex items-start gap-3 transition-all cursor-pointer ${
                   t.completed
-                    ? 'opacity-50 bg-white/5 border-white/5'
-                    : 'bg-black/25 hover:bg-black/40 border-white/10 hover:border-cyan-400/35'
+                    ? 'opacity-50 bg-[#0d1017]/40 border-white/5'
+                    : 'bg-[#0d1017]/75 hover:bg-[#1a202c] border-white/10 hover:border-[#c8ef43]/35'
                 }`}
               >
                 <button
                   type="button"
                   className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${
                     t.completed
-                      ? 'bg-emerald-400/20 border-emerald-400 text-emerald-300'
+                      ? 'bg-[#9ee4c3]/20 border-[#9ee4c3] text-[#9ee4c3]'
                       : t.isOverdue
-                      ? 'border-amber-400/80 bg-amber-400/10'
-                      : 'border-cyan-300/60 bg-cyan-950/40'
+                      ? 'border-amber-400 bg-amber-400/10'
+                      : 'border-white/30 bg-white/5'
                   }`}
                 >
                   {t.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -302,7 +296,7 @@ export default function TasksProjects({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className={`text-sm font-medium ${t.completed ? 'line-through opacity-60' : ''}`}>
+                    <span className={`text-sm font-medium text-white ${t.completed ? 'line-through opacity-60' : ''}`}>
                       {t.title}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -313,8 +307,8 @@ export default function TasksProjects({
                             : t.priority === 'high'
                             ? 'bg-amber-500/20 text-amber-300 border-amber-400/35'
                             : t.priority === 'medium'
-                            ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30'
-                            : 'bg-white/10 text-sky-300 border-white/15'
+                            ? 'bg-[#63d8d8]/15 text-[#63d8d8] border-[#63d8d8]/30'
+                            : 'bg-white/10 text-gray-300 border-white/15'
                         }`}
                       >
                         {t.priority}
@@ -325,7 +319,7 @@ export default function TasksProjects({
                         </span>
                       )}
                       {t.isCarriedForward && (
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-400/30 flex items-center gap-1">
+                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[#9ee4c3]/15 text-[#9ee4c3] border border-[#9ee4c3]/30 flex items-center gap-1">
                           <RotateCcw className="w-3 h-3" /> Carried
                         </span>
                       )}
@@ -333,10 +327,10 @@ export default function TasksProjects({
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5">
-                    <div className="flex flex-wrap items-center gap-2 text-xs opacity-75">
-                      <span className="px-2 py-0.5 rounded text-[11px] bg-white/10">{t.project}</span>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                      <span className="px-2 py-0.5 rounded text-[11px] bg-white/[0.06] text-gray-300">{t.project}</span>
                       <span className="flex items-center gap-1 text-[11px]">
-                        <Calendar className="w-3 h-3 text-cyan-300" /> {t.dueDate}
+                        <Calendar className="w-3 h-3 text-[#c8ef43]" /> {t.dueDate}
                         {t.dueTime ? ` • ${t.dueTime}` : ''}
                       </span>
                     </div>
@@ -348,7 +342,7 @@ export default function TasksProjects({
                           e.stopPropagation();
                           onMoveOverdueToToday(t.id);
                         }}
-                        className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-cyan-200 font-semibold"
+                        className="text-[11px] px-2.5 py-1 rounded-lg bg-[#c8ef43]/15 hover:bg-[#c8ef43]/25 text-[#c8ef43] font-semibold"
                       >
                         Move to Today
                       </button>

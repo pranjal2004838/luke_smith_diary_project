@@ -19,7 +19,13 @@ interface QuickThoughtModalProps {
   onClose: () => void;
 }
 
-const MINDSET_OPTIONS: MindsetType[] = ['Calm', 'Focused', 'Energized', 'Reflective', 'Stretched'];
+const MOOD_OPTIONS: { mood: MindsetType; emoji: string }[] = [
+  { mood: 'Calm', emoji: '😊' },
+  { mood: 'Good', emoji: '🙂' },
+  { mood: 'Okay', emoji: '😐' },
+  { mood: 'Low', emoji: '😔' },
+  { mood: 'Overwhelmed', emoji: '😣' },
+];
 
 interface SpeechRecognitionEventLike {
   results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -79,7 +85,6 @@ export default function QuickThoughtModal({
     secondsRef.current = 0;
     setRecordingSeconds(0);
 
-    // Start live Web Speech API transcription if browser supports it
     const win = window as unknown as {
       SpeechRecognition?: new () => SpeechRecognitionLike;
       webkitSpeechRecognition?: new () => SpeechRecognitionLike;
@@ -98,13 +103,11 @@ export default function QuickThoughtModal({
           }
           setText(transcript.trim());
         };
-        rec.onerror = () => {
-          // Silent fallback if speech service offline
-        };
+        rec.onerror = () => {};
         rec.start();
         speechRecRef.current = rec;
       } catch {
-        // Ignore if unavailable
+        // ignore
       }
     }
 
@@ -122,8 +125,7 @@ export default function QuickThoughtModal({
           const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           const reader = new FileReader();
           reader.onloadend = () => {
-            const base64Url = reader.result as string;
-            setAudioDataUrl(base64Url);
+            setAudioDataUrl(reader.result as string);
           };
           reader.readAsDataURL(blob);
 
@@ -151,7 +153,6 @@ export default function QuickThoughtModal({
         throw new Error('Microphone unavailable');
       }
     } catch {
-      // Fallback recording simulation if mic permission blocked in preview
       setRecordingNote('Microphone blocked or unavailable — simulating voice capture & transcript.');
       setIsRecording(true);
       timerRef.current = window.setInterval(() => {
@@ -239,26 +240,26 @@ export default function QuickThoughtModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-xl rounded-3xl overflow-hidden border border-cyan-400/40 shadow-[0_0_40px_rgba(34,211,238,0.25)] text-sky-50"
-        style={{ backgroundColor: '#041222' }}
+        className="w-full max-w-xl rounded-3xl overflow-hidden border border-white/15 shadow-2xl text-white"
+        style={{ backgroundColor: '#11151d' }}
       >
         {/* Header */}
-        <div className="p-5 border-b border-cyan-400/15 flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+            <span className="p-2 rounded-xl bg-[#c8ef43]/15 text-[#c8ef43] border border-[#c8ef43]/30">
               <Mic className="w-5 h-5" />
             </span>
             <div>
-              <h2 className="font-sans font-bold text-lg">Record a Thought</h2>
-              <p className="text-xs text-sky-300/70">Speak or type — AI can pull out tasks to review</p>
+              <h2 className="font-sans font-bold text-lg text-white">Record a Thought</h2>
+              <p className="text-xs text-gray-400">Speak or type — AI can pull out tasks to review</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sky-200"
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300"
             aria-label="Close modal"
           >
             <X className="w-4 h-4" />
@@ -272,7 +273,7 @@ export default function QuickThoughtModal({
             className={`p-4 rounded-2xl border transition-all ${
               isRecording
                 ? 'bg-rose-500/15 border-rose-400/50'
-                : 'bg-cyan-500/10 border-cyan-400/25'
+                : 'bg-[#141821] border-white/10'
             }`}
           >
             <div className="flex items-center justify-between gap-3">
@@ -282,17 +283,17 @@ export default function QuickThoughtModal({
                   onClick={isRecording ? stopRecording : startRecording}
                   className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shrink-0 ${
                     isRecording
-                      ? 'bg-rose-500 text-white animate-pulse shadow-[0_0_20px_rgba(244,63,94,0.5)]'
-                      : 'bg-cyan-400 hover:bg-cyan-300 text-[#04101e] shadow-[0_0_20px_rgba(34,211,238,0.4)]'
+                      ? 'bg-rose-500 text-white animate-pulse'
+                      : 'bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14]'
                   }`}
                 >
                   {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                 </button>
                 <div>
-                  <div className="text-sm font-bold">
+                  <div className="text-sm font-bold text-white">
                     {isRecording ? 'Listening... tap to stop' : 'Tap mic to record voice note'}
                   </div>
-                  <div className="text-xs text-sky-300/75">
+                  <div className="text-xs text-gray-400">
                     Saves audio playback + editable text transcription
                   </div>
                 </div>
@@ -309,41 +310,38 @@ export default function QuickThoughtModal({
               <p className="text-[11px] text-amber-300 mt-2">{recordingNote}</p>
             )}
 
-            {/* Playback Check after recording */}
             {audioDataUrl && !isRecording && (
               <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={togglePlayback}
-                    className="w-8 h-8 rounded-full bg-cyan-400 text-[#04101e] flex items-center justify-center hover:scale-105 transition-transform"
+                    className="w-8 h-8 rounded-full bg-[#c8ef43] text-[#0b0f14] flex items-center justify-center hover:scale-105 transition-transform"
                   >
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                   </button>
-                  <div className="text-xs text-emerald-300 font-medium flex items-center gap-1.5">
+                  <div className="text-xs text-[#9ee4c3] font-medium flex items-center gap-1.5">
                     <Volume2 className="w-3.5 h-3.5" />
                     <span>Playback ready ({audioDuration})</span>
                   </div>
                 </div>
-                <span className="text-[11px] text-emerald-300 flex items-center gap-1">
+                <span className="text-[11px] text-[#9ee4c3] flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Transcribed below
                 </span>
               </div>
             )}
           </div>
 
-          {/* Optional Short Heading */}
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Optional heading (e.g., Film notes idea)"
-            className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-sm text-white placeholder-sky-300/40 focus:outline-none focus:border-cyan-400"
+            className="w-full px-4 py-2.5 rounded-xl bg-[#0d1017] border border-white/15 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#c8ef43]"
           />
 
-          {/* Editable Note / Transcript */}
           <div>
-            <label className="block text-xs font-semibold text-cyan-300 mb-1.5">
+            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
               Thought or Voice Transcript (editable)
             </label>
             <textarea
@@ -351,42 +349,42 @@ export default function QuickThoughtModal({
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Speak above or type freely... e.g. 'Follow up with the editor on Friday and prepare three questions for the production meeting.'"
-              className="w-full px-4 py-3 rounded-xl bg-black/40 border border-cyan-400/25 text-sm text-white placeholder-sky-300/40 focus:outline-none focus:border-cyan-300"
+              className="w-full px-4 py-3 rounded-xl bg-[#0d1017] border border-white/15 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#c8ef43]"
             />
           </div>
 
-          {/* Mindset Check-In Selector (Lilac accent) */}
+          {/* Mood Check-In */}
           <div>
-            <label className="block text-xs font-semibold text-purple-300 mb-1.5">
-              How is your mindset right now?
+            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+              Mood check-in
             </label>
             <div className="flex flex-wrap gap-2">
-              {MINDSET_OPTIONS.map((m) => (
+              {MOOD_OPTIONS.map((item) => (
                 <button
-                  key={m}
+                  key={item.mood}
                   type="button"
-                  onClick={() => setMindset(m)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                    mindset === m
-                      ? 'bg-purple-400 text-[#04101e] border-purple-300 font-bold'
-                      : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 border-purple-400/30'
+                  onClick={() => setMindset(item.mood)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                    mindset === item.mood
+                      ? 'bg-[#c8ef43]/15 text-[#c8ef43] border-[#c8ef43]/50 font-bold'
+                      : 'bg-[#1a202c] text-gray-300 border-white/10 hover:text-white'
                   }`}
                 >
-                  {m}
+                  <span>{item.emoji}</span>
+                  <span>{item.mood}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-white/10">
             <button
               type="button"
               onClick={handleSaveOnly}
               disabled={!text.trim() && !audioDataUrl}
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-sky-100 font-semibold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
+              className="px-4 py-2.5 rounded-full bg-[#1a202c] hover:bg-[#222a38] text-gray-200 font-semibold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
             >
-              <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+              <BookOpen className="w-3.5 h-3.5 text-[#63d8d8]" />
               <span>Save to Diary</span>
             </button>
 
@@ -394,7 +392,7 @@ export default function QuickThoughtModal({
               type="button"
               onClick={handleSaveAndExtract}
               disabled={!text.trim()}
-              className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg disabled:opacity-40"
+              className="px-4 py-2.5 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg disabled:opacity-40"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Pull Out Tasks & Review</span>

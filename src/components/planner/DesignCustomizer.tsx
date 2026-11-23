@@ -3,8 +3,6 @@ import {
   Palette, 
   Image as ImageIcon, 
   Check, 
-  Layers, 
-  Sun,
   Upload,
   Type,
   X,
@@ -19,22 +17,22 @@ export interface DashboardSettings {
   mockupMode: 'clean' | 'background';
   backgroundImageUrl: string;
   backgroundBlur: 'none' | 'sm' | 'md' | 'xl';
-  photoVisibility: number; // 15 to 95 (higher = photo more visible)
+  photoVisibility: number; // 15 to 100
   textColor: TextColorOption;
 }
 
 export const TEXT_COLOR_THEMES: Record<TextColorOption, { label: string; primaryHex: string; subHex: string; swatch: string }> = {
+  white: {
+    label: 'Crisp White (Default)',
+    primaryHex: '#ffffff',
+    subHex: '#9ca3af',
+    swatch: '#ffffff',
+  },
   'ice-blue': {
-    label: 'Ice Blue (Default)',
+    label: 'Ice Blue',
     primaryHex: '#e0f2fe',
     subHex: '#93c5fd',
     swatch: '#7dd3fc',
-  },
-  white: {
-    label: 'Crisp White',
-    primaryHex: '#ffffff',
-    subHex: '#cbd5e1',
-    swatch: '#ffffff',
   },
   cream: {
     label: 'Warm Cream (Soft)',
@@ -46,7 +44,7 @@ export const TEXT_COLOR_THEMES: Record<TextColorOption, { label: string; primary
     label: 'Mint Mist',
     primaryHex: '#d1fae5',
     subHex: '#6ee7b7',
-    swatch: '#6ee7b7',
+    swatch: '#9ee4c3',
   },
   silver: {
     label: 'Cool Silver',
@@ -63,14 +61,13 @@ interface DesignCustomizerProps {
   onOpenAuth?: () => void;
   onOpenExport?: () => void;
   onShowPwaInfo?: () => void;
-  initialFocus?: 'photo' | 'settings';
 }
 
 const presetImages = [
   {
-    name: 'Luke Studio Portrait',
-    url: '/luke-hero-hoodie.jpg',
-    thumb: '/luke-hero-hoodie.jpg',
+    name: 'Luke Portrait',
+    url: '/luke-cato-clear.jpg',
+    thumb: '/luke-cato-clear.jpg',
   },
   {
     name: 'Luke Monochrome',
@@ -78,18 +75,17 @@ const presetImages = [
     thumb: '/luke-cato-bw-hoodie.jpg',
   },
   {
-    name: 'Deep Midnight Blue',
-    url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80',
+    name: 'Misty Mountains',
+    url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
     thumb: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=300&q=80',
   },
   {
-    name: 'Nordic Calm Mist',
-    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80',
+    name: 'Nordic Calm',
+    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
     thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=80',
   },
 ];
 
-// Compress uploaded image so it fits cleanly inside browser storage on iPhone/desktop
 function compressImageFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -165,300 +161,230 @@ export default function DesignCustomizer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end select-none">
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex justify-end select-none">
       <div
-        className="w-full max-w-md h-full border-l border-cyan-400/35 text-sky-50 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right"
-        style={{ backgroundColor: '#04101e' }}
+        className="w-full max-w-md h-full border-l border-white/15 text-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right"
+        style={{ backgroundColor: '#11151d' }}
       >
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-cyan-400/15">
-          <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-              <Palette className="w-5 h-5" />
-            </span>
-            <div>
-              <h3 className="font-sans font-bold text-lg">Appearance & Photo</h3>
-              <p className="text-xs text-sky-300/75">Personalise background & text legibility</p>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-[#c8ef43]/15 text-[#c8ef43] border border-[#c8ef43]/30">
+                <Palette className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="font-sans font-bold text-lg text-white">Settings & Photo</h3>
+                <p className="text-xs text-gray-400">Personalise photo, text colour & account</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200"
+              aria-label="Close settings"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sky-200"
-            aria-label="Close appearance settings"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* 1. Text Colour Selector */}
-        <div>
-          <label className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-cyan-300 mb-2.5">
-            <Type className="w-3.5 h-3.5" />
-            <span>Text Colour</span>
-          </label>
-          <div className="grid grid-cols-1 gap-2">
-            {(Object.keys(TEXT_COLOR_THEMES) as TextColorOption[]).map((key) => {
-              const theme = TEXT_COLOR_THEMES[key];
-              const active = settings.textColor === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => onUpdateSettings({ textColor: key })}
-                  className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-between text-left transition-all ${
-                    active
-                      ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                      : 'border-white/10 bg-white/5 hover:border-white/25'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="w-4 h-4 rounded-full border border-white/30"
-                      style={{ backgroundColor: theme.swatch }}
+          {/* 1. Personal Photo Upload */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-[#c8ef43]">
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>Personal Photo</span>
+            </label>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-3 px-4 rounded-xl bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload Photo from Device</span>
+            </button>
+
+            {uploadStatus && (
+              <p className="text-xs text-[#9ee4c3] text-center font-medium">{uploadStatus}</p>
+            )}
+
+            {/* Presets */}
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              {presetImages.map((img) => {
+                const isSelected = settings.backgroundImageUrl === img.url;
+                return (
+                  <div
+                    key={img.name}
+                    onClick={() =>
+                      onUpdateSettings({
+                        backgroundImageUrl: img.url,
+                        mockupMode: 'background',
+                      })
+                    }
+                    className={`relative h-20 rounded-xl overflow-hidden cursor-pointer border transition-all ${
+                      isSelected
+                        ? 'border-[#c8ef43] ring-2 ring-[#c8ef43]/50'
+                        : 'border-white/15 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={img.thumb}
+                      alt={img.name}
+                      className="w-full h-full object-cover object-top"
                     />
-                    <span className="text-sm font-medium" style={{ color: theme.primaryHex }}>
-                      {theme.label}
-                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 flex items-end">
+                      <span className="text-[11px] font-semibold text-white leading-tight">
+                        {img.name}
+                      </span>
+                    </div>
                   </div>
-                  {active && <Check className="w-4 h-4 text-cyan-300" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                );
+              })}
+            </div>
 
-        {/* 2. Personal Background Photo Upload */}
-        <div className="space-y-3 pt-2 border-t border-white/10">
-          <label className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-cyan-300">
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span>Personal Background Photo</span>
-          </label>
-
-          {/* Direct File Upload Button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full py-3 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-100 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_18px_rgba(34,211,238,0.18)]"
-          >
-            <Upload className="w-4 h-4 text-cyan-300" />
-            <span>Upload Photo from Device</span>
-          </button>
-
-          {uploadStatus && (
-            <p className="text-xs text-emerald-300 text-center font-medium">{uploadStatus}</p>
-          )}
-
-          {/* Presets */}
-          <div className="grid grid-cols-2 gap-2.5 pt-1">
-            {presetImages.map((img) => {
-              const isSelected = settings.backgroundImageUrl === img.url && settings.mockupMode === 'background';
-              return (
-                <div
-                  key={img.name}
-                  onClick={() =>
-                    onUpdateSettings({
-                      backgroundImageUrl: img.url,
-                      mockupMode: 'background',
-                    })
-                  }
-                  className={`relative h-20 rounded-xl overflow-hidden cursor-pointer border transition-all ${
-                    isSelected
-                      ? 'border-cyan-400 ring-2 ring-cyan-400/50'
-                      : 'border-white/15 opacity-75 hover:opacity-100'
-                  }`}
-                >
-                  <img
-                    src={img.thumb}
-                    alt={img.name}
-                    className="w-full h-full object-cover object-top"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 flex items-end">
-                    <span className="text-[11px] font-semibold text-white leading-tight">
-                      {img.name}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Photo Visibility Slider */}
-          <div className="pt-2 space-y-3">
-            <div>
-              <div className="flex items-center justify-between text-xs text-sky-200 mb-1.5">
-                <span>Photo Visibility Behind Dashboard</span>
-                <span className="font-mono text-cyan-300 font-bold">{settings.photoVisibility}%</span>
+            {/* Photo Visibility Slider */}
+            <div className="pt-2">
+              <div className="flex items-center justify-between text-xs text-gray-300 mb-1.5">
+                <span>Photo Brightness / Visibility</span>
+                <span className="font-mono text-[#c8ef43] font-bold">{settings.photoVisibility}%</span>
               </div>
               <input
                 type="range"
-                min="10"
-                max="95"
+                min="25"
+                max="100"
                 step="5"
                 value={settings.photoVisibility}
                 onChange={(e) =>
                   onUpdateSettings({
                     photoVisibility: Number(e.target.value),
-                    mockupMode: 'background',
                   })
                 }
-                className="w-full accent-cyan-400 cursor-pointer"
+                className="w-full accent-[#c8ef43] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-sky-300/60 mt-0.5">
-                <span>Subtle (Max Readability)</span>
-                <span>Bright Photo</span>
-              </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between text-xs text-sky-200 mb-1.5">
-                <span>Background Softness (Blur)</span>
-                <span className="font-mono text-cyan-300 uppercase">{settings.backgroundBlur}</span>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5 text-xs">
-                {(['none', 'sm', 'md', 'xl'] as const).map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => onUpdateSettings({ backgroundBlur: b })}
-                    className={`py-1.5 rounded-lg font-mono text-[11px] transition-colors ${
-                      settings.backgroundBlur === b
-                        ? 'bg-cyan-400 text-[#04101e] font-bold'
-                        : 'bg-white/5 text-sky-200 hover:bg-white/15'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Optional Paste URL */}
+            <form onSubmit={handleApplyCustomUrl} className="flex gap-2 pt-1">
+              <input
+                type="url"
+                placeholder="Or paste image URL..."
+                value={customUrl}
+                onChange={(e) => setCustomUrl(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-xl bg-[#0d1017] border border-white/15 text-xs text-white focus:outline-none focus:border-[#c8ef43]"
+              />
+              <button
+                type="submit"
+                className="px-3 py-2 rounded-xl bg-[#1a202c] hover:bg-[#222a38] text-xs font-semibold text-[#c8ef43] border border-white/15"
+              >
+                Use URL
+              </button>
+            </form>
           </div>
 
-          {/* Optional Paste URL */}
-          <form onSubmit={handleApplyCustomUrl} className="flex gap-2 pt-1">
-            <input
-              type="url"
-              placeholder="Or paste image URL..."
-              value={customUrl}
-              onChange={(e) => setCustomUrl(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-cyan-400"
-            />
-            <button
-              type="submit"
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-cyan-300 border border-white/15"
-            >
-              Use URL
-            </button>
-          </form>
-        </div>
-
-        {/* 3. Layout Mode Toggle (Clean Solid vs Photo Backdrop) */}
-        <div className="pt-2 border-t border-white/10">
-          <label className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-cyan-300 mb-2">
-            <Layers className="w-3.5 h-3.5" />
-            <span>Dashboard Backdrop Mode</span>
-          </label>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => onUpdateSettings({ mockupMode: 'background' })}
-              className={`p-3 rounded-xl border text-left transition-all ${
-                settings.mockupMode === 'background'
-                  ? 'border-cyan-400 bg-cyan-500/15'
-                  : 'border-white/10 bg-white/5 hover:border-white/25'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <ImageIcon className="w-4 h-4 text-cyan-300" />
-                {settings.mockupMode === 'background' && <Check className="w-3.5 h-3.5 text-cyan-300" />}
-              </div>
-              <div className="font-semibold text-xs">Photo Glass</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => onUpdateSettings({ mockupMode: 'clean' })}
-              className={`p-3 rounded-xl border text-left transition-all ${
-                settings.mockupMode === 'clean'
-                  ? 'border-cyan-400 bg-cyan-500/15'
-                  : 'border-white/10 bg-white/5 hover:border-white/25'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <Sun className="w-4 h-4 text-cyan-300" />
-                {settings.mockupMode === 'clean' && <Check className="w-3.5 h-3.5 text-cyan-300" />}
-              </div>
-              <div className="font-semibold text-xs">Clean Focus</div>
-            </button>
-          </div>
-        </div>
-
-        {/* 4. Private Vault, Backup & Mobile Setup */}
-        {(onOpenAuth || onOpenExport || onShowPwaInfo) && (
-          <div className="pt-2 border-t border-white/10 space-y-2">
-            <label className="block text-xs uppercase tracking-wider font-bold text-cyan-300 mb-2">
-              Private Account & Data
+          {/* 2. Text Colour Selector */}
+          <div className="pt-2 border-t border-white/10">
+            <label className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-[#c8ef43] mb-2.5">
+              <Type className="w-3.5 h-3.5" />
+              <span>Text Colour</span>
             </label>
             <div className="grid grid-cols-1 gap-2">
-              {onOpenAuth && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenAuth();
-                  }}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-sky-100"
-                >
-                  <Lock className="w-4 h-4 text-cyan-300" />
-                  <span>Private Access & Login</span>
-                </button>
-              )}
-              {onOpenExport && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenExport();
-                  }}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-sky-100"
-                >
-                  <Download className="w-4 h-4 text-emerald-300" />
-                  <span>Export Backup (JSON / CSV)</span>
-                </button>
-              )}
-              {onShowPwaInfo && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onShowPwaInfo();
-                  }}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-sky-100"
-                >
-                  <Smartphone className="w-4 h-4 text-purple-300" />
-                  <span>Add to iPhone Home Screen</span>
-                </button>
-              )}
+              {(Object.keys(TEXT_COLOR_THEMES) as TextColorOption[]).map((key) => {
+                const theme = TEXT_COLOR_THEMES[key];
+                const active = settings.textColor === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => onUpdateSettings({ textColor: key })}
+                    className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-between text-left transition-all ${
+                      active
+                        ? 'border-[#c8ef43] bg-[#c8ef43]/15'
+                        : 'border-white/10 bg-[#141821] hover:border-white/25'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="w-4 h-4 rounded-full border border-white/30"
+                        style={{ backgroundColor: theme.swatch }}
+                      />
+                      <span className="text-sm font-medium" style={{ color: theme.primaryHex }}>
+                        {theme.label}
+                      </span>
+                    </div>
+                    {active && <Check className="w-4 h-4 text-[#c8ef43]" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        )}
-      </div>
 
-      <div className="pt-4 border-t border-white/10 mt-6">
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-lg transition-colors"
-        >
-          Done
-        </button>
-      </div>
+          {/* 3. Private Account, Backup & Mobile Setup */}
+          {(onOpenAuth || onOpenExport || onShowPwaInfo) && (
+            <div className="pt-2 border-t border-white/10 space-y-2">
+              <label className="block text-xs uppercase tracking-wider font-bold text-[#c8ef43] mb-2">
+                Account & Data
+              </label>
+              <div className="grid grid-cols-1 gap-2">
+                {onOpenAuth && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenAuth();
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#141821] hover:bg-[#1a202c] border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-gray-200"
+                  >
+                    <Lock className="w-4 h-4 text-[#c8ef43]" />
+                    <span>Private Access & Login</span>
+                  </button>
+                )}
+                {onOpenExport && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenExport();
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#141821] hover:bg-[#1a202c] border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-gray-200"
+                  >
+                    <Download className="w-4 h-4 text-[#9ee4c3]" />
+                    <span>Export Backup (JSON / CSV)</span>
+                  </button>
+                )}
+                {onShowPwaInfo && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onShowPwaInfo();
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#141821] hover:bg-[#1a202c] border border-white/10 flex items-center gap-2.5 text-xs font-semibold text-gray-200"
+                  >
+                    <Smartphone className="w-4 h-4 text-[#63d8d8]" />
+                    <span>Add to iPhone Home Screen</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="pt-4 border-t border-white/10 mt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider shadow-lg transition-colors"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );

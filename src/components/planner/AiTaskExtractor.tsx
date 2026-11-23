@@ -18,7 +18,6 @@ interface AiTaskExtractorProps {
   projects: Project[];
   onAddTasks: (newTasks: Omit<Task, 'id'>[]) => void;
   onClose: () => void;
-  isGlassTheme?: boolean;
 }
 
 interface SuggestedTask {
@@ -59,7 +58,6 @@ function parseNoteIntoTasks(text: string, projects: Project[]): SuggestedTask[] 
     ];
   }
 
-  // Split custom thoughts cleanly on " and " or ". " or "; "
   const clauses = text
     .split(/(?:\s+and\s+|\.\s+|;\s+)/i)
     .map((s) => s.trim().replace(/[.]+$/, ''))
@@ -168,17 +166,20 @@ export default function AiTaskExtractor({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh] bg-[#041222]/95 border border-cyan-400/35 shadow-[0_0_40px_rgba(34,211,238,0.2)] text-sky-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div
+        className="w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh] border border-white/15 shadow-2xl text-white"
+        style={{ backgroundColor: '#11151d' }}
+      >
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-cyan-400/15 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 rounded-2xl bg-cyan-500/20 border border-cyan-400/35 text-cyan-300">
+            <span className="p-2.5 rounded-2xl bg-[#c8ef43]/15 border border-[#c8ef43]/30 text-[#c8ef43]">
               <Sparkles className="w-5 h-5" />
             </span>
             <div>
-              <h2 className="font-sans font-bold text-lg sm:text-xl">Review AI-Extracted Tasks</h2>
-              <p className="text-xs text-sky-300/75 mt-0.5">
+              <h2 className="font-sans font-bold text-lg sm:text-xl text-white">Review AI-Extracted Tasks</h2>
+              <p className="text-xs text-gray-400 mt-0.5">
                 Edit titles, dates, or projects before saving to your planner
               </p>
             </div>
@@ -186,7 +187,7 @@ export default function AiTaskExtractor({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-sky-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -195,17 +196,17 @@ export default function AiTaskExtractor({
         {/* Content Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-black/35 border border-white/10">
-              <Cpu className="w-4 h-4 text-cyan-300" />
-              <span className="text-sky-200">AI Engine:</span>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[#141821] border border-white/10">
+              <Cpu className="w-4 h-4 text-[#c8ef43]" />
+              <span className="text-gray-300">AI Engine:</span>
               <div className="flex items-center gap-1.5 ml-auto">
                 <button
                   type="button"
                   onClick={() => setSelectedProvider('claude')}
-                  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                  className={`px-2.5 py-1 rounded-full font-semibold transition-all ${
                     selectedProvider === 'claude'
-                      ? 'bg-cyan-400 text-[#04101e]'
-                      : 'text-sky-300 hover:text-white'
+                      ? 'bg-[#c8ef43] text-[#0b0f14]'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Claude
@@ -213,10 +214,10 @@ export default function AiTaskExtractor({
                 <button
                   type="button"
                   onClick={() => setSelectedProvider('chatgpt')}
-                  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                  className={`px-2.5 py-1 rounded-full font-semibold transition-all ${
                     selectedProvider === 'chatgpt'
-                      ? 'bg-cyan-400 text-[#04101e]'
-                      : 'text-sky-300 hover:text-white'
+                      ? 'bg-[#c8ef43] text-[#0b0f14]'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   ChatGPT
@@ -224,15 +225,14 @@ export default function AiTaskExtractor({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/25 text-emerald-200">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[#141821] border border-[#9ee4c3]/25 text-[#9ee4c3]">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
               <span>Zero-Retention Privacy: Notes are never used to train models.</span>
             </div>
           </div>
 
-          {/* Input Box */}
           <div>
-            <label className="block text-xs uppercase tracking-wider font-semibold mb-1.5 text-cyan-300">
+            <label className="block text-xs uppercase tracking-wider font-semibold mb-1.5 text-gray-300">
               Note or Voice Transcript
             </label>
             <textarea
@@ -240,14 +240,14 @@ export default function AiTaskExtractor({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Type or paste a note..."
-              className="w-full px-4 py-3 rounded-2xl bg-black/40 border border-cyan-400/25 text-white text-sm focus:outline-none focus:border-cyan-300"
+              className="w-full px-4 py-3 rounded-2xl bg-[#0d1017] border border-white/15 text-white text-sm focus:outline-none focus:border-[#c8ef43]"
             />
             <div className="flex items-center justify-end mt-2">
               <button
                 type="button"
                 onClick={handleRunAi}
                 disabled={isProcessing || !inputText.trim()}
-                className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 transition-all disabled:opacity-50"
+                className="px-4 py-2 rounded-full bg-[#1a202c] hover:bg-[#222a38] border border-white/15 text-[#c8ef43] font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all disabled:opacity-50"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{isProcessing ? 'Extracting...' : 'Re-Extract Tasks'}</span>
@@ -255,16 +255,15 @@ export default function AiTaskExtractor({
             </div>
           </div>
 
-          {/* Extracted Tasks Preview & Edit */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-sans font-bold text-sm flex items-center gap-2">
+              <h3 className="font-sans font-bold text-sm flex items-center gap-2 text-white">
                 <span>Suggested Tasks</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#c8ef43]/15 text-[#c8ef43]">
                   {suggestedTasks.filter((t) => t.approved).length} selected
                 </span>
               </h3>
-              <span className="text-xs text-sky-300/70">Tap any field to edit before saving</span>
+              <span className="text-xs text-gray-400">Tap any field to edit before saving</span>
             </div>
 
             <div className="space-y-3">
@@ -273,8 +272,8 @@ export default function AiTaskExtractor({
                   key={st.id}
                   className={`p-4 rounded-2xl border transition-all ${
                     st.approved
-                      ? 'bg-black/40 border-cyan-400/40'
-                      : 'bg-black/20 border-white/10 opacity-50'
+                      ? 'bg-[#141821] border-[#c8ef43]/35'
+                      : 'bg-[#0d1017] border-white/10 opacity-50'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -283,8 +282,8 @@ export default function AiTaskExtractor({
                       onClick={() => handleToggleTaskApproved(st.id)}
                       className={`mt-1 w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
                         st.approved
-                          ? 'bg-cyan-400 border-cyan-400 text-[#04101e]'
-                          : 'border-sky-400/40 text-transparent'
+                          ? 'bg-[#c8ef43] border-[#c8ef43] text-[#0b0f14]'
+                          : 'border-white/30 text-transparent'
                       }`}
                     >
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -298,66 +297,66 @@ export default function AiTaskExtractor({
                           onChange={(e) =>
                             handleUpdateTaskField(st.id, 'title', e.target.value)
                           }
-                          className="w-full bg-transparent font-semibold text-sm text-white border-b border-white/15 pb-1 focus:border-cyan-300 focus:outline-none"
+                          className="w-full bg-transparent font-semibold text-sm text-white border-b border-white/15 pb-1 focus:border-[#c8ef43] focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => handleDeleteSuggestedTask(st.id)}
-                          className="text-sky-300/60 hover:text-rose-400 p-1"
+                          className="text-gray-400 hover:text-rose-400 p-1"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 sm:col-span-2">
-                          <Folder className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1017] border border-white/10 sm:col-span-2">
+                          <Folder className="w-3.5 h-3.5 text-[#9ee4c3] shrink-0" />
                           <select
                             value={st.project}
                             onChange={(e) =>
                               handleUpdateTaskField(st.id, 'project', e.target.value)
                             }
-                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full truncate"
+                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full truncate"
                           >
                             {projects.map((p) => (
-                              <option key={p.id} value={p.name} className="bg-[#041222] text-white">
+                              <option key={p.id} value={p.name} className="bg-[#141821] text-white">
                                 {p.name}
                               </option>
                             ))}
                           </select>
                         </div>
 
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1017] border border-white/10">
                           <Flag className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                           <select
                             value={st.priority}
                             onChange={(e) =>
                               handleUpdateTaskField(st.id, 'priority', e.target.value)
                             }
-                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full"
+                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full"
                           >
-                            <option value="urgent" className="bg-[#041222] text-white">Urgent</option>
-                            <option value="high" className="bg-[#041222] text-white">High</option>
-                            <option value="medium" className="bg-[#041222] text-white">Medium</option>
-                            <option value="low" className="bg-[#041222] text-white">Low</option>
+                            <option value="urgent" className="bg-[#141821] text-white">Urgent</option>
+                            <option value="high" className="bg-[#141821] text-white">High</option>
+                            <option value="medium" className="bg-[#141821] text-white">Medium</option>
+                            <option value="low" className="bg-[#141821] text-white">Low</option>
                           </select>
                         </div>
 
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                          <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1017] border border-white/10">
+                          <Calendar className="w-3.5 h-3.5 text-[#63d8d8] shrink-0" />
                           <input
                             type="date"
                             value={st.dueDate}
                             onChange={(e) =>
                               handleUpdateTaskField(st.id, 'dueDate', e.target.value)
                             }
-                            className="bg-transparent text-sky-100 text-xs focus:outline-none w-full"
+                            className="bg-transparent text-gray-200 text-xs focus:outline-none w-full"
                           />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 text-xs">
-                        <Clock className="w-3 h-3 text-cyan-300" />
+                        <Clock className="w-3 h-3 text-[#63d8d8]" />
                         <input
                           type="text"
                           value={st.dueTime}
@@ -365,7 +364,7 @@ export default function AiTaskExtractor({
                             handleUpdateTaskField(st.id, 'dueTime', e.target.value)
                           }
                           placeholder="Time (e.g. 2:00 pm)"
-                          className="bg-transparent text-xs text-sky-200 border-b border-white/10 focus:border-cyan-300 focus:outline-none w-28"
+                          className="bg-transparent text-xs text-gray-300 border-b border-white/10 focus:border-[#c8ef43] focus:outline-none w-28"
                         />
                       </div>
                     </div>
@@ -377,22 +376,22 @@ export default function AiTaskExtractor({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 sm:p-6 border-t border-cyan-400/15 flex items-center justify-between bg-black/40">
-          <div className="text-xs text-sky-300/75">
+        <div className="p-5 sm:p-6 border-t border-white/10 flex items-center justify-between bg-[#0d1017]">
+          <div className="text-xs text-gray-400">
             {suggestedTasks.filter((t) => t.approved).length} tasks ready to save
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-sky-300 hover:text-white"
+              className="px-4 py-2.5 rounded-full text-xs font-semibold text-gray-400 hover:text-white"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleApproveAndSave}
-              className="px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#04101e] font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2"
+              className="px-5 py-2.5 rounded-full bg-[#c8ef43] hover:bg-[#d7f861] text-[#0b0f14] font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2"
             >
               <Check className="w-4 h-4" />
               <span>Approve & Save Tasks</span>
