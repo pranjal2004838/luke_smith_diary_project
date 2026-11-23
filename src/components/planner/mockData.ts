@@ -58,25 +58,51 @@ export interface Project {
   deadline: string;
 }
 
-const getLocalDateStr = (offsetDays = 0): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
+export const formatDateStr = (d: Date): string => {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
+const getLocalDateStr = (offsetDays = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return formatDateStr(d);
+};
+
+// Get Monday..Sunday dates for the current week
+export const getCurrentWeekDates = (): Date[] => {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sun, 1 = Mon...
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+};
+
+const weekDates = getCurrentWeekDates();
+const monStr = formatDateStr(weekDates[0]);
+const tueStr = formatDateStr(weekDates[1]);
+const wedStr = formatDateStr(weekDates[2]);
+const thuStr = formatDateStr(weekDates[3]);
+const friStr = formatDateStr(weekDates[4]);
+const satStr = formatDateStr(weekDates[5]);
+
 export const TODAY_STR = getLocalDateStr(0);
 export const YESTERDAY_STR = getLocalDateStr(-1);
 export const TOMORROW_STR = getLocalDateStr(1);
-export const FRIDAY_STR = getLocalDateStr(3);
+export const FRIDAY_STR = friStr;
 
 export const initialProjects: Project[] = [
   {
     id: 'proj-1',
     name: 'Book 13: "The Courage to Ask"',
-    color: '#38bdf8',
+    color: '#d4f854', // Lime
     progress: 72,
     totalTasks: 18,
     completedTasks: 13,
@@ -86,7 +112,7 @@ export const initialProjects: Project[] = [
   {
     id: 'proj-2',
     name: 'Film & Media Production',
-    color: '#34d399',
+    color: '#67e8f9', // Cyan/Teal
     progress: 55,
     totalTasks: 12,
     completedTasks: 7,
@@ -96,7 +122,7 @@ export const initialProjects: Project[] = [
   {
     id: 'proj-3',
     name: 'Real Direction Academy',
-    color: '#c084fc',
+    color: '#86efac', // Mint
     progress: 40,
     totalTasks: 10,
     completedTasks: 4,
@@ -106,7 +132,7 @@ export const initialProjects: Project[] = [
   {
     id: 'proj-4',
     name: 'Personal & Mindset',
-    color: '#fbbf24',
+    color: '#d8b4fe', // Lilac
     progress: 80,
     totalTasks: 5,
     completedTasks: 4,
@@ -121,8 +147,8 @@ export const initialTasks: Task[] = [
     title: 'Review the project plan',
     project: 'Real Direction Academy',
     priority: 'high',
-    dueDate: TODAY_STR,
-    dueTime: '11:00 am',
+    dueDate: monStr,
+    dueTime: '10:00 am',
     completed: false,
     notes: 'Confirm next milestone dates and key deliverables.',
     milestone: 'Mentorship cohort curriculum launch',
@@ -132,7 +158,7 @@ export const initialTasks: Task[] = [
     title: 'Send the film notes',
     project: 'Film & Media Production',
     priority: 'high',
-    dueDate: TODAY_STR,
+    dueDate: tueStr,
     dueTime: '2:00 pm',
     completed: false,
     notes: 'Include lighting cues and intro talking points.',
@@ -140,20 +166,49 @@ export const initialTasks: Task[] = [
   },
   {
     id: 't-3',
-    title: "Check tomorrow's diary",
-    project: 'Personal & Mindset',
+    title: 'Prep keynote slides',
+    project: 'Book 13: "The Courage to Ask"',
     priority: 'medium',
-    dueDate: TODAY_STR,
-    dueTime: '4:30 pm',
+    dueDate: wedStr,
+    dueTime: '11:00 am',
     completed: false,
-    notes: 'Review priorities and set top 3 goals for tomorrow.',
+    notes: 'Refine opening story and audience prompt.',
   },
   {
     id: 't-4',
+    title: 'Studio sound check',
+    project: 'Film & Media Production',
+    priority: 'medium',
+    dueDate: thuStr,
+    dueTime: '3:00 pm',
+    completed: false,
+  },
+  {
+    id: 't-5',
+    title: "Check tomorrow's diary",
+    project: 'Personal & Mindset',
+    priority: 'medium',
+    dueDate: friStr,
+    dueTime: '11:00 am',
+    completed: false,
+    notes: 'Review priorities and set top 3 goals for the weekend.',
+  },
+  {
+    id: 't-6',
+    title: 'Weekly reflection & reset',
+    project: 'Personal & Mindset',
+    priority: 'low',
+    dueDate: satStr,
+    dueTime: '10:00 am',
+    completed: true,
+  },
+  {
+    id: 't-7',
     title: 'Review Chapter 4 galleys with editor',
     project: 'Book 13: "The Courage to Ask"',
     priority: 'urgent',
     dueDate: YESTERDAY_STR,
+    dueTime: '9:00 am',
     completed: false,
     isOverdue: true,
     isCarriedForward: true,
@@ -161,21 +216,12 @@ export const initialTasks: Task[] = [
     milestone: 'Final galleys revision with Penguin UK',
   },
   {
-    id: 't-5',
-    title: 'Morning reflection & priority check-in',
-    project: 'Personal & Mindset',
-    priority: 'medium',
-    dueDate: TODAY_STR,
-    dueTime: '8:30 am',
-    completed: true,
-  },
-  {
-    id: 't-6',
-    title: 'Sign off on Question-Cards packaging proof',
+    id: 't-8',
+    title: 'Sign off on Question-Cards proof',
     project: 'Book 13: "The Courage to Ask"',
     priority: 'medium',
     dueDate: TODAY_STR,
-    dueTime: '9:30 am',
+    dueTime: '9:00 am',
     completed: true,
     notes: 'Approved high-res print proof with printer.',
   },
