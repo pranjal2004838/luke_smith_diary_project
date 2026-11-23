@@ -1,4 +1,4 @@
-export type MindsetType = 'Calm' | 'Focused' | 'Energized' | 'Reflective' | 'Stretched';
+export type MindsetType = 'Calm' | 'Good' | 'Okay' | 'Low' | 'Overwhelmed' | 'Focused' | 'Energized' | 'Reflective' | 'Stretched';
 
 export interface Task {
   id: string;
@@ -12,6 +12,7 @@ export interface Task {
   isCarriedForward?: boolean;
   notes?: string;
   milestone?: string;
+  colorTone?: 'lime' | 'teal' | 'mint' | 'lilac';
 }
 
 export interface Appointment {
@@ -102,30 +103,30 @@ export const initialProjects: Project[] = [
   {
     id: 'proj-1',
     name: 'Book 13: "The Courage to Ask"',
-    color: '#d4f854', // Lime
-    progress: 72,
-    totalTasks: 18,
-    completedTasks: 13,
+    color: '#c8ef43', // Lime
+    progress: 75,
+    totalTasks: 16,
+    completedTasks: 12,
     currentMilestone: 'Final galleys revision with Penguin UK',
     deadline: getLocalDateStr(10),
   },
   {
     id: 'proj-2',
     name: 'Film & Media Production',
-    color: '#67e8f9', // Cyan/Teal
-    progress: 55,
+    color: '#63d8d8', // Teal
+    progress: 65,
     totalTasks: 12,
-    completedTasks: 7,
+    completedTasks: 8,
     currentMilestone: 'Send film notes & studio schedule',
     deadline: getLocalDateStr(14),
   },
   {
     id: 'proj-3',
     name: 'Real Direction Academy',
-    color: '#86efac', // Mint
-    progress: 40,
+    color: '#9ee4c3', // Mint
+    progress: 50,
     totalTasks: 10,
-    completedTasks: 4,
+    completedTasks: 5,
     currentMilestone: 'Mentorship cohort curriculum launch',
     deadline: getLocalDateStr(20),
   },
@@ -141,89 +142,118 @@ export const initialProjects: Project[] = [
   },
 ];
 
+// Tasks positioned to match Luke's reference weekly calendar grid
 export const initialTasks: Task[] = [
   {
     id: 't-1',
-    title: 'Review the project plan',
-    project: 'Real Direction Academy',
+    title: 'Review project plan',
+    project: 'Book 13: "The Courage to Ask"',
     priority: 'high',
     dueDate: monStr,
     dueTime: '10:00 am',
     completed: false,
+    colorTone: 'lime',
     notes: 'Confirm next milestone dates and key deliverables.',
-    milestone: 'Mentorship cohort curriculum launch',
+    milestone: 'Final galleys revision with Penguin UK',
   },
   {
     id: 't-2',
-    title: 'Send the film notes',
+    title: 'Send film notes',
     project: 'Film & Media Production',
     priority: 'high',
     dueDate: tueStr,
-    dueTime: '2:00 pm',
+    dueTime: '1:00 pm',
     completed: false,
+    colorTone: 'teal',
     notes: 'Include lighting cues and intro talking points.',
     milestone: 'Send film notes & studio schedule',
   },
   {
     id: 't-3',
-    title: 'Prep keynote slides',
+    title: 'Team meeting',
     project: 'Book 13: "The Courage to Ask"',
-    priority: 'medium',
-    dueDate: wedStr,
+    priority: 'urgent',
+    dueDate: thuStr,
     dueTime: '11:00 am',
     completed: false,
-    notes: 'Refine opening story and audience prompt.',
+    colorTone: 'lime',
+    notes: 'Production & editorial team alignment call.',
   },
   {
     id: 't-4',
-    title: 'Studio sound check',
-    project: 'Film & Media Production',
+    title: 'Check diary',
+    project: 'Real Direction Academy',
     priority: 'medium',
-    dueDate: thuStr,
-    dueTime: '3:00 pm',
+    dueDate: friStr,
+    dueTime: '2:00 pm',
     completed: false,
+    colorTone: 'mint',
+    notes: 'Review priorities and schedule for next week.',
   },
   {
     id: 't-5',
-    title: "Check tomorrow's diary",
-    project: 'Personal & Mindset',
-    priority: 'medium',
-    dueDate: friStr,
-    dueTime: '11:00 am',
+    title: 'Keynote prep',
+    project: 'Film & Media Production',
+    priority: 'high',
+    dueDate: satStr,
+    dueTime: '9:30 am',
     completed: false,
-    notes: 'Review priorities and set top 3 goals for the weekend.',
+    colorTone: 'teal',
+    notes: 'Run through slides and opening hook.',
   },
   {
     id: 't-6',
-    title: 'Weekly reflection & reset',
-    project: 'Personal & Mindset',
-    priority: 'low',
-    dueDate: satStr,
-    dueTime: '10:00 am',
-    completed: true,
-  },
-  {
-    id: 't-7',
     title: 'Review Chapter 4 galleys with editor',
     project: 'Book 13: "The Courage to Ask"',
     priority: 'urgent',
     dueDate: YESTERDAY_STR,
-    dueTime: '9:00 am',
+    dueTime: '4:00 pm',
     completed: false,
     isOverdue: true,
     isCarriedForward: true,
+    colorTone: 'lime',
     notes: 'Carried forward from yesterday. Penguin UK expects returned PDF.',
-    milestone: 'Final galleys revision with Penguin UK',
   },
+  // Completed tasks so progress reads naturally (e.g. 12 of 18 or high completion bar)
   {
-    id: 't-8',
+    id: 't-7',
     title: 'Sign off on Question-Cards proof',
     project: 'Book 13: "The Courage to Ask"',
     priority: 'medium',
-    dueDate: TODAY_STR,
+    dueDate: wedStr,
     dueTime: '9:00 am',
     completed: true,
-    notes: 'Approved high-res print proof with printer.',
+    colorTone: 'mint',
+  },
+  {
+    id: 't-8',
+    title: 'Morning reflection & priority check',
+    project: 'Personal & Mindset',
+    priority: 'low',
+    dueDate: wedStr,
+    dueTime: '8:30 am',
+    completed: true,
+    colorTone: 'mint',
+  },
+  {
+    id: 't-9',
+    title: 'Approve studio lighting setup',
+    project: 'Film & Media Production',
+    priority: 'medium',
+    dueDate: wedStr,
+    dueTime: '3:00 pm',
+    completed: true,
+    colorTone: 'teal',
+  },
+  {
+    id: 't-10',
+    title: 'Update keynote bio for organiser',
+    project: 'Real Direction Academy',
+    priority: 'low',
+    dueDate: wedStr,
+    dueTime: '4:00 pm',
+    completed: true,
+    colorTone: 'mint',
   },
 ];
 
@@ -286,7 +316,7 @@ export const initialDiaryEntries: DiaryEntry[] = [
     time: '10:20 pm',
     title: 'Evening Reflection: The Art of Unspoken Questions',
     type: 'note',
-    mindset: 'Reflective',
+    mindset: 'Good',
     content:
       'In leadership, the most dangerous assumption is believing silence equals agreement. When speaking with executives today, 80% of what blocked their team was fear of asking what seemed obvious. Expand this into Chapter 5.',
     tags: ['Philosophy', 'BookNotes', 'Keynotes'],
@@ -297,7 +327,7 @@ export const initialDiaryEntries: DiaryEntry[] = [
     time: '02:15 pm',
     title: 'Card Deck Concept: "Difficult Conversations"',
     type: 'idea',
-    mindset: 'Energized',
+    mindset: 'Calm',
     content:
       'Drafting 10 sample prompt cards for high-stakes executive dialogue. Core theme: Disagreeing without contempt.',
     tags: ['QuestionCards', 'ProductIdea'],
@@ -305,9 +335,9 @@ export const initialDiaryEntries: DiaryEntry[] = [
 ];
 
 export const initialMindsetHistory: MindsetCheckIn[] = [
-  { id: 'm-1', date: getLocalDateStr(-4), time: '09:00 am', mindset: 'Focused', note: 'Deep writing session' },
-  { id: 'm-2', date: getLocalDateStr(-3), time: '08:30 am', mindset: 'Energized', note: 'Great keynote feedback' },
-  { id: 'm-3', date: getLocalDateStr(-2), time: '02:15 pm', mindset: 'Stretched', note: 'Busy filming schedule' },
-  { id: 'm-4', date: YESTERDAY_STR, time: '10:20 pm', mindset: 'Reflective', note: 'Evening journaling helped unwind' },
+  { id: 'm-1', date: getLocalDateStr(-4), time: '09:00 am', mindset: 'Good', note: 'Deep writing session' },
+  { id: 'm-2', date: getLocalDateStr(-3), time: '08:30 am', mindset: 'Calm', note: 'Great keynote feedback' },
+  { id: 'm-3', date: getLocalDateStr(-2), time: '02:15 pm', mindset: 'Okay', note: 'Busy filming schedule' },
+  { id: 'm-4', date: YESTERDAY_STR, time: '10:20 pm', mindset: 'Good', note: 'Evening journaling helped unwind' },
   { id: 'm-5', date: TODAY_STR, time: '08:45 am', mindset: 'Calm', note: 'Clear priorities for today' },
 ];

@@ -14,12 +14,12 @@ import {
 import { DashboardSettings } from '../components/planner/DesignCustomizer';
 
 const STORAGE_KEYS = {
-  TASKS: 'luke_planner_tasks_v3',
-  APPOINTMENTS: 'luke_planner_appointments_v3',
-  DIARY: 'luke_planner_diary_v3',
-  PROJECTS: 'luke_planner_projects_v3',
-  MINDSET: 'luke_planner_mindset_v3',
-  SETTINGS: 'luke_planner_settings_v3',
+  TASKS: 'luke_planner_tasks_v4',
+  APPOINTMENTS: 'luke_planner_appointments_v4',
+  DIARY: 'luke_planner_diary_v4',
+  PROJECTS: 'luke_planner_projects_v4',
+  MINDSET: 'luke_planner_mindset_v4',
+  SETTINGS: 'luke_planner_settings_v4',
   AUTH: 'luke_planner_auth_user',
 };
 
@@ -160,10 +160,10 @@ export const plannerService = {
     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     const defaultSettings: DashboardSettings = {
       mockupMode: 'background',
-      backgroundImageUrl: '/luke-hero-hoodie.jpg',
-      backgroundBlur: 'sm',
-      photoVisibility: 55,
-      textColor: 'ice-blue',
+      backgroundImageUrl: '/luke-cato-clear.jpg',
+      backgroundBlur: 'none',
+      photoVisibility: 90,
+      textColor: 'white',
     };
     if (!raw) return defaultSettings;
     try {

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Settings,
-  Smartphone,
-  Bell
+  Smartphone
 } from 'lucide-react';
 import { 
   Task, 
@@ -138,62 +137,66 @@ export default function PlannerApp() {
     setCurrentUser(null);
   };
 
-  const openTaskCount = tasks.filter((t) => !t.completed).length;
-
   return (
     <div
-      className="min-h-screen font-sans bg-[#0b0f14] selection:bg-[#d4f854] selection:text-[#0b0f14]"
+      className="min-h-screen font-sans bg-[#0d1017] selection:bg-[#c8ef43] selection:text-[#0b0f14]"
       style={{ color: colorTheme.primaryHex }}
     >
       {/* Top Navigation Bar (Matching Luke's Reference Screenshot) */}
-      <header className="sticky top-0 z-40 bg-[#0b0f14]/95 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2">
-          {/* Left: Brand + Top Nav Pills (Home, Calendar, Diary) */}
-          <div className="flex items-center gap-2.5 sm:gap-6 min-w-0">
-            <span className="font-sans font-bold text-sm sm:text-lg tracking-tight text-white whitespace-nowrap">
+      <header className="sticky top-0 z-40 bg-[#0d1017]/95 backdrop-blur-md border-b border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3.5 flex items-center justify-between gap-2">
+          {/* Left: Brand + Pill Track (Home | Calendar | Diary) */}
+          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+            <span className="font-sans font-extrabold text-base sm:text-2xl tracking-tight text-white whitespace-nowrap">
               My planner
             </span>
 
-            <nav aria-label="Primary navigation" className="flex items-center gap-0.5 sm:gap-1.5">
+            <nav
+              aria-label="Primary navigation"
+              className="flex items-center bg-[#141821] border border-white/10 rounded-full p-1"
+            >
               {[
                 { id: 'home', label: 'Home' },
                 { id: 'calendar', label: 'Calendar' },
                 { id: 'diary', label: 'Diary' },
-              ].map((item) => {
+              ].map((item, idx) => {
                 const active = activeTab === item.id;
                 return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveTab(item.id as typeof activeTab)}
-                    className={`px-2.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
-                      active
-                        ? 'bg-[#d4f854] text-[#0b0f14] font-bold shadow-sm'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
+                  <div key={item.id} className="flex items-center">
+                    {idx > 0 && !active && activeTab !== ['home', 'calendar', 'diary'][idx - 1] && (
+                      <span className="h-3.5 w-px bg-white/10 mx-0.5" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(item.id as typeof activeTab)}
+                      className={`px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                        active
+                          ? 'bg-[#c8ef43] text-[#0b0f14] font-bold shadow-[0_0_12px_rgba(200,239,67,0.3)]'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  </div>
                 );
               })}
             </nav>
           </div>
 
-          {/* Right: Reminder Status Pill + Settings */}
+          {/* Right: Set Reminder button + Settings */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setIsChartsOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#131922] hover:bg-[#1a222d] border border-white/10 text-xs font-medium text-gray-200 transition-colors"
+              onClick={() => setIsAddTaskOpen(true)}
+              className="px-3 sm:px-4 py-1.5 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-xs font-medium text-gray-200 transition-colors"
             >
-              <Bell className="w-3.5 h-3.5 text-[#d4f854]" />
-              <span>{openTaskCount} open</span>
+              Set Reminder
             </button>
 
             <button
               type="button"
               onClick={() => setIsCustomizerOpen(true)}
-              className="p-2 rounded-full bg-[#131922] hover:bg-[#1a222d] border border-white/10 text-gray-200 transition-colors"
+              className="p-2 rounded-xl bg-[#141821] hover:bg-[#1c222e] border border-white/15 text-gray-300 hover:text-white transition-colors"
               aria-label="Settings and appearance"
               title="Photo, text colour, private access & backup"
             >
