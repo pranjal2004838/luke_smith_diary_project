@@ -147,14 +147,14 @@ export default function PlannerApp() {
     >
       {/* Top Navigation Bar (Matching Luke's Reference Screenshot) */}
       <header className="sticky top-0 z-40 bg-[#0b0f14]/95 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2">
           {/* Left: Brand + Top Nav Pills (Home, Calendar, Diary) */}
-          <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-            <span className="font-sans font-bold text-base sm:text-lg tracking-tight text-white whitespace-nowrap">
+          <div className="flex items-center gap-2.5 sm:gap-6 min-w-0">
+            <span className="font-sans font-bold text-sm sm:text-lg tracking-tight text-white whitespace-nowrap">
               My planner
             </span>
 
-            <nav aria-label="Primary navigation" className="flex items-center gap-1 sm:gap-1.5">
+            <nav aria-label="Primary navigation" className="flex items-center gap-0.5 sm:gap-1.5">
               {[
                 { id: 'home', label: 'Home' },
                 { id: 'calendar', label: 'Calendar' },
@@ -166,7 +166,7 @@ export default function PlannerApp() {
                     key={item.id}
                     type="button"
                     onClick={() => setActiveTab(item.id as typeof activeTab)}
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                    className={`px-2.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                       active
                         ? 'bg-[#d4f854] text-[#0b0f14] font-bold shadow-sm'
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
