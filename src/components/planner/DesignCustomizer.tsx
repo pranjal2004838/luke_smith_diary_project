@@ -8,7 +8,8 @@ import {
   X,
   Lock,
   Download,
-  Smartphone
+  Smartphone,
+  Watch
 } from 'lucide-react';
 
 export type TextColorOption = 'ice-blue' | 'white' | 'cream' | 'mint' | 'silver';
@@ -130,6 +131,7 @@ export default function DesignCustomizer({
 }: DesignCustomizerProps) {
   const [customUrl, setCustomUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [showWatchInfo, setShowWatchInfo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -370,6 +372,36 @@ export default function DesignCustomizer({
                     <Smartphone className="w-4 h-4 text-[#63d8d8]" />
                     <span>Add to iPhone Home Screen</span>
                   </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowWatchInfo(!showWatchInfo)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#141821] hover:bg-[#1a202c] border border-white/10 flex items-center justify-between text-xs font-semibold text-gray-200"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Watch className="w-4 h-4 text-[#c8ef43]" />
+                    <span>Apple Watch & Wearable Sync</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400">{showWatchInfo ? 'Hide' : 'View'}</span>
+                </button>
+
+                {showWatchInfo && (
+                  <div className="p-3.5 rounded-xl bg-[#0d1017] border border-white/10 text-xs text-gray-300 space-y-2">
+                    <div className="font-semibold text-white flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#c8ef43]" />
+                      <span>Supported with current app:</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 pl-3.5 leading-relaxed">
+                      All task reminders & calendar alerts mirror automatically to your Apple Watch / WearOS when paired with your phone. You can glance at next tasks and dismiss/complete notifications directly on your wrist.
+                    </p>
+                    <div className="font-semibold text-white flex items-center gap-1.5 pt-1">
+                      <span className="w-2 h-2 rounded-full bg-[#63d8d8]" />
+                      <span>Future native Watch app:</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 pl-3.5 leading-relaxed">
+                      Stand-alone wrist voice dictation (recording without your phone nearby) and permanent watch face complications require building a dedicated Apple WatchKit / WearOS companion app.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
